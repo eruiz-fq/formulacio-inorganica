@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormulAR - Entrenador de Formulación Química</title>
+    <!-- Tailwind CSS para diseño moderno, responsivo y de fondo claro -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Branding -->
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-md shadow-indigo-600/10">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">FormulAR</h1>
+                    <p class="text-xs text-slate-500 font-medium tracking-wide" id="subtitulo-docente">Dpto. Física y Química — Elena Ruiz Alfaro</p>
+                </div>
+            </div>
+
+            <!-- Global Controls -->
+            <div class="flex items-center gap-4">
+                <!-- Selector de Idioma -->
+                <div class="bg-slate-100 p-1 rounded-lg border border-slate-200 flex gap-1 text-xs">
+                    <button id="btn-lang-es" onclick="setLanguage('es')" class="px-3 py-1 rounded-md font-semibold transition duration-200 bg-white text-indigo-600 shadow-sm">Castellano</button>
+                    <button id="btn-lang-ca" onclick="setLanguage('ca')" class="px-3 py-1 rounded-md font-semibold transition duration-200 text-slate-500 hover:text-slate-800">Català</button>
+                </div>
+
+                <!-- Marcadores de Progreso en Cabecera -->
+                <div class="hidden sm:flex items-center gap-2 text-xs">
+                    <div class="bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl">
+                        <span class="text-indigo-800 font-bold uppercase" id="lbl-aciertos-header">Aciertos:</span>
+                        <span class="font-extrabold text-indigo-900 mono pl-1" id="global-total-correct">0</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                        <span class="text-amber-800 font-bold uppercase" id="lbl-record-header">Récord:</span>
+                        <span class="font-extrabold text-amber-900 mono pl-1" id="global-max-score">0</span>
+                    </div>
+                </div>
+
+                <!-- Racha Actual Flotante -->
+                <div class="bg-indigo-600 border border-indigo-500 px-4 py-1.5 rounded-xl flex items-center gap-2 shadow-sm shadow-indigo-500/10">
+                    <span class="text-white">🔥</span>
+                    <span class="text-xs font-bold text-indigo-100 uppercase tracking-wider" id="txt-score-label">Racha:</span>
+                    <span class="font-extrabold text-white mono" id="global-score">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CRONÓMETRO GLOBAL FLOTANTE -->
+    <div class="bg-white border border-slate-200 shadow-lg px-4 py-2.5 rounded-full flex items-center gap-3 sticky top-24 self-center z-40 mt-4">
+        <span class="text-indigo-600 animate-pulse">⏱️</span>
+        <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider" id="lbl-timer">Tiempo:</span>
+        <span class="font-bold text-slate-800 mono text-lg" id="timer-display">00:00</span>
+        <div class="flex items-center gap-1 border-l border-slate-200 pl-2">
+            <button onclick="toggleTimer()" id="btn-timer-play" class="p-1 hover:bg-slate-100 rounded text-slate-600 transition" title="Pausar/Reanudar">
+                ⏸️
+            </button>
+            <button onclick="resetTimer()" class="p-1 hover:bg-slate-100 rounded text-slate-600 transition" title="Reiniciar">
+                🔄
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        
+        <!-- TABS DE NAVEGACIÓN PRINCIPAL -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-200/60 p-1.5 rounded-2xl border border-slate-200">
+            <button id="tab-quiz" onclick="switchTab('quiz')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition duration-200 bg-white text-indigo-600 shadow-sm border border-slate-200">
+                <span>🏋️</span> <span id="lbl-tab-quiz">Practica</span>
+            </button>
+            <button id="tab-lab" onclick="switchTab('lab')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                <span>🧪</span> <span id="lbl-tab-lab">Laboratorio</span>
+            </button>
+            <button id="tab-errors" onclick="switchTab('errors')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                <span>⚠️</span> <span id="lbl-tab-errors">Errores Comunes</span>
+            </button>
+            <button id="tab-guide" onclick="switchTab('guide')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50">
+                <span>📘</span> <span id="lbl-tab-guide">Guía de Estudio</span>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: PRACTICA (QUIZ) -->
+        <!-- ========================================== -->
+        <section id="content-quiz" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Sidebar de Categorías y Configuración -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-5">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3" id="lbl-config-session">Configuración</h3>
+                        <!-- Input del Nombre del Alumno -->
+                        <div class="space-y-1">
+                            <label class="text-xs font-semibold text-slate-500" id="lbl-student-name">Nombre del alumno/a:</label>
+                            <input type="text" id="student-name-input" oninput="updateStudentName()" placeholder="Ej. Ana García" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- Modalidad de Pregunta -->
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest" id="lbl-question-mode">Modalidad</h4>
+                        <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg text-[10px]">
+                            <button id="btn-mode-formula" onclick="setQuizMode('formula')" class="py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm">Nom -> Fór</button>
+                            <button id="btn-mode-name" onclick="setQuizMode('name')" class="py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800">Fór -> Nom</button>
+                            <button id="btn-mode-mixed" onclick="setQuizMode('mixed')" class="py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800">Mixto</button>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3" id="lbl-select-cat">Categorías</h3>
+                        <div class="flex flex-col gap-1.5" id="categories-list">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Marcador secundario para móviles -->
+                    <div class="flex sm:hidden justify-between gap-2 text-xs border-t border-slate-100 pt-3">
+                        <div class="bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl flex-1 text-center">
+                            <span class="text-indigo-800 font-bold block" id="lbl-aciertos-mobile">Aciertos</span>
+                            <span class="font-extrabold text-indigo-900 mono text-base" id="global-total-correct-mobile">0</span>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl flex-1 text-center">
+                            <span class="text-amber-800 font-bold block" id="lbl-record-mobile">Récord</span>
+                            <span class="font-extrabold text-amber-900 mono text-base" id="global-max-score-mobile">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Acción de Generar PDF -->
+                    <div class="border-t border-slate-100 pt-4 mt-auto">
+                        <button onclick="prepareAndPrintSession()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition duration-150 flex items-center justify-center gap-2 shadow-sm text-sm">
+                            <span>📄</span> <span id="lbl-export-pdf">Generar PDF de Sesión</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Panel de Pregunta Activa -->
+                <div class="lg:col-span-2 flex flex-col gap-6">
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden flex flex-col gap-6 min-h-[380px] justify-between">
+                        <!-- Indicador de tipo de pregunta -->
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                            <span class="bg-indigo-50 text-indigo-600 text-xs px-3 py-1 rounded-full border border-indigo-200/50 font-bold" id="quiz-badge-category">Cargando...</span>
+                            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider" id="quiz-question-type">Escribe la fórmula</span>
+                        </div>
+
+                        <!-- Pregunta principal -->
+                        <div class="text-center py-6 space-y-2">
+                            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider" id="lbl-quiz-prompt">Compuesto a formular:</p>
+                            <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-indigo-950 select-all" id="quiz-target-name">...</h2>
+                        </div>
+
+                        <!-- Input del alumno y teclado químico -->
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <input type="text" id="quiz-input" placeholder="Escribe aquí tu respuesta..." class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-indigo-500 rounded-2xl px-5 py-4 text-lg font-semibold text-slate-800 placeholder-slate-400 transition duration-150 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 tracking-wide">
+                                <button onclick="clearQuizInput()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition duration-150 p-1 font-bold">✕</button>
+                            </div>
+
+                            <!-- Teclado químico inteligente -->
+                            <div class="bg-slate-100 p-2.5 rounded-xl border border-slate-200 flex flex-wrap justify-center gap-1.5" id="chem-keyboard">
+                                <button onclick="insertAtCursor('2')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₂</button>
+                                <button onclick="insertAtCursor('3')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₃</button>
+                                <button onclick="insertAtCursor('4')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₄</button>
+                                <button onclick="insertAtCursor('5')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₅</button>
+                                <button onclick="insertAtCursor('6')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₆</button>
+                                <button onclick="insertAtCursor('7')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">₇</button>
+                                <button onclick="insertAtCursor('(')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">(</button>
+                                <button onclick="insertAtCursor(')')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">)</button>
+                                <button onclick="insertAtCursor('+')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">⁺</button>
+                                <button onclick="insertAtCursor('-')" class="bg-white hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-sm transition border border-slate-200">⁻</button>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="flex gap-3 mt-4">
+                            <button onclick="checkQuizAnswer()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition duration-150 shadow-sm text-center" id="btn-submit-answer">Comprobar Respuesta</button>
+                            <button onclick="nextQuizQuestion()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-6 rounded-xl transition duration-150 border border-slate-200" id="btn-skip">Siguiente</button>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Feedback interactivo -->
+                    <div id="quiz-feedback-box" class="hidden rounded-3xl p-6 border transition-all duration-300 flex flex-col gap-3">
+                        <div class="flex items-center gap-3">
+                            <span id="quiz-feedback-icon" class="text-2xl"></span>
+                            <h4 id="quiz-feedback-title" class="text-lg font-bold"></h4>
+                        </div>
+                        <p id="quiz-feedback-text" class="text-slate-600 text-sm leading-relaxed"></p>
+                        <div id="quiz-feedback-detail" class="mt-2 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1 text-xs text-slate-500">
+                            <!-- Detalles -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: LABORATORIO DE VALENCIAS -->
+        <!-- ========================================== -->
+        <section id="content-lab" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900 mb-2" id="lab-title">Laboratorio de Cruce de Valencias</h2>
+                <p class="text-slate-500 text-sm mb-6" id="lab-desc">Combina un catión y un anión para ver paso a paso cómo se cruzan las cargas y se simplifican.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Selector de Cationes -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4" id="lbl-cationes">1. Elige un Catión (Metal o Poliatómico)</h3>
+                        <div class="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2" id="lab-cations-list">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Selector de Aniones -->
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4" id="lbl-aniones">2. Elige un Anión (No Metal / Oxoanión)</h3>
+                        <div class="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto pr-2" id="lab-anions-list">
+                            <!-- Generado dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Visualizador interactivo -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-6 min-h-[300px]">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest" id="lbl-visualizer">3. Visualización y Reglas</h3>
+                        
+                        <div class="flex flex-col items-center justify-center gap-6 py-6 bg-slate-50 rounded-xl border border-slate-200">
+                            <!-- Iones Activos -->
+                            <div class="flex items-center gap-8 justify-center min-h-[80px]">
+                                <div id="v-cation" class="flex flex-col items-center transition-all duration-300">
+                                    <span class="text-3xl font-extrabold text-indigo-600 mono" id="lab-show-cation-sym">Fe</span>
+                                    <span class="text-sm text-indigo-500 font-bold mt-1" id="lab-show-cation-chg">3+</span>
+                                </div>
+                                <span class="text-2xl text-slate-300 font-bold">+</span>
+                                <div id="v-anion" class="flex flex-col items-center transition-all duration-300">
+                                    <span class="text-3xl font-extrabold text-violet-600 mono" id="lab-show-anion-sym">O</span>
+                                    <span class="text-sm text-violet-500 font-bold mt-1" id="lab-show-anion-chg">2-</span>
+                                </div>
+                            </div>
+
+                            <button onclick="combineIons()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl transition duration-150 shadow-md shadow-indigo-600/10" id="btn-combine">Combinar y Formular</button>
+                        </div>
+
+                        <!-- Panel de resultado final -->
+                        <div id="lab-result-panel" class="hidden bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-3">
+                            <div class="text-center">
+                                <span class="text-xs text-slate-400 font-bold uppercase tracking-widest" id="lbl-formula-obtenida">Fórmula Obtenida</span>
+                                <h4 class="text-3xl font-black text-indigo-900 mt-1 select-all tracking-wider mono" id="lab-result-formula">Fe₂O₃</h4>
+                            </div>
+                            <div class="border-t border-slate-200 pt-3 space-y-1.5 text-xs text-slate-600">
+                                <p><strong class="text-slate-800 font-semibold" id="lbl-nom-esteq">N. Estequiométrica:</strong> <span class="text-slate-700" id="lab-result-systematic">trióxido de dihierro</span></p>
+                                <p><strong class="text-slate-800 font-semibold" id="lbl-nom-stock">N. de Stock:</strong> <span class="text-slate-700" id="lab-result-stock">óxido de hierro(III)</span></p>
+                                <p id="lab-result-alert" class="text-amber-600 font-bold mt-2 hidden">⚠️ Regla especial aplicada.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: DELS ERRORS APRENEM -->
+        <!-- ========================================== -->
+        <section id="content-errors" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col gap-1 mb-6">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><span>⚠️</span> <span id="err-title">Dels Errors Aprenem (Aprender de los Errores)</span></h2>
+                    <p class="text-slate-500 text-sm" id="err-desc">La PAU penaliza fuertemente estos fallos habituales. Analiza el compuesto erróneo e intenta deducir el motivo del fallo para revelar la explicación correcta.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="errors-grid">
+                    <!-- Generado dinámicamente según apuntes -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: GUÍA DE ESTUDIO -->
+        <!-- ========================================== -->
+        <section id="content-guide" class="hidden space-y-6">
+            <!-- Tabla de Estados de Oxidación de Referencia UIB -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 class="text-xl font-bold text-slate-900 mb-2" id="guide-pt-title">Estados de Oxidación Frecuentes (Directrices UIB / PAU)</h2>
+                <p class="text-slate-500 text-sm mb-6" id="guide-pt-desc">Los elementos que aparecen con mayor frecuencia en los exámenes y sus estados de oxidación clave:</p>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3" id="guide-elements-grid">
+                    <!-- Elementos generados dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Resumen de Reglas IUPAC 2005 -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                <h2 class="text-xl font-bold text-slate-900 border-b border-slate-200 pb-3" id="guide-rules-title">Resumen de Reglas de Formulación</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <h3 class="text-lg font-bold text-indigo-600 flex items-center gap-2"><span>⚛️</span> <span id="guide-r1-title">Haluros de Oxígeno (IUPAC 2005)</span></h3>
+                        <p class="text-slate-600 text-sm leading-relaxed" id="guide-r1-desc">
+                            Según la secuencia de electronegatividad IUPAC 2005, el oxígeno se sitúa a la izquierda de todos los halógenos (F, Cl, Br, I), excepto del Flúor. Por tanto, se formula como:
+                            <br><strong class="text-slate-800 select-all">OCl₂</strong> (dicloruro de oxígeno) y no Cl₂O.
+                            <br><strong class="text-slate-800 select-all">OF₂</strong> (difluoruro de oxígeno) ya que el flúor es más electronegativo.
+                        </p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-lg font-bold text-violet-600 flex items-center gap-2"><span>🧪</span> <span id="guide-r2-title">Prefijos de Composición y Cargas</span></h3>
+                        <p class="text-slate-600 text-sm leading-relaxed" id="guide-r2-desc">
+                            Para compuestos iónicos puedes utilizar números de oxidación (Stock, ej: <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">hierro(III)</code>) o prefijos multiplicadores (Sistemática, ej: <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">di-</code>, <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">tri-</code>). ¡Nunca mezclas ambos sistemas!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 space-y-1 mt-auto">
+        <p class="font-semibold text-slate-600">Institut d'Ensenyaments a Distància de les Illes Balears (IEDIB)</p>
+        <p>© 2026 Elena Ruiz Alfaro • Preparación para la evaluación PAU/PTE</p>
+    </footer>
+
+    <!-- LOGICA DEL JUEGO / DATA BASE -->
+    <script>
+        // --- CATEGORÍAS (GLOBAL) ---
+        const CATEGORIES = {
+            all: { es: "Todos los niveles", ca: "Tots els nivells" },
+            binarios: { es: "Compuestos Binarios", ca: "Compostos Binaris" },
+            ternarios: { es: "Compuestos Ternarios", ca: "Compostos Ternaris" },
+            cuaternarios: { es: "Compuestos Cuaternarios", ca: "Compostos Quaternaris" }
+        };
+
+        // --- BASE DE DATOS MASIVA (CURRÍCULO UIB IUPAC 2005 COMPLETO) ---
+        const DATABASE = [
+            // --- HIDRÁCIDOS ---
+            { id: "bin_hyd_gas1", category: "binarios", formula: "HCl (g)", names: { es: ["cloruro de hidrógeno"], ca: ["clorur d'hidrogen"] }, tip: { es: "En estado gaseoso (g), los hidrácidos son haluros de hidrógeno y se nombran con el sufijo '-uro de hidrógeno'.", ca: "En estat gasós (g), els hidràcids són halurs d'hidrogen." } },
+            { id: "bin_hyd_aq1", category: "binarios", formula: "HCl (aq)", names: { es: ["ácido clorhídrico"], ca: ["àcid clorhídric"] }, tip: { es: "En disolución acuosa (aq), el haluro de hidrógeno se comporta como ácido y se nombra como 'ácido ...-hídrico'.", ca: "En dissolució aquosa (aq), es nomena com a 'àcid ...-hídric'." } },
+            { id: "bin_hyd_gas2", category: "binarios", formula: "H2S (g)", names: { es: ["sulfuro de hidrógeno"], ca: ["sulfur d'hidrogen"] }, tip: { es: "En estado gaseoso (g), el H₂S se nombra como 'sulfuro de hidrógeno'. Observa el subíndice 2 debido al azufre (-2).", ca: "En estat gasós (g), s'anomena 'sulfur d'hidrogen'." } },
+            { id: "bin_hyd_aq2", category: "binarios", formula: "H2S (aq)", names: { es: ["ácido sulfhídrico"], ca: ["àcid sulfhídric"] }, tip: { es: "En disolución acuosa (aq), adquiere carácter ácido.", ca: "En dissolució aquosa (aq), adquireix caràcter àcid." } },
+            { id: "bin_hyd_gas3", category: "binarios", formula: "HF (g)", names: { es: ["fluoruro de hidrógeno"], ca: ["fluorur d'hidrogen"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
+            { id: "bin_hyd_aq3", category: "binarios", formula: "HF (aq)", names: { es: ["ácido fluorhídrico"], ca: ["àcid fluorhídric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
+            { id: "bin_hyd_gas4", category: "binarios", formula: "HBr (g)", names: { es: ["bromuro de hidrógeno"], ca: ["bromur d'hidrogen"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
+            { id: "bin_hyd_aq4", category: "binarios", formula: "HBr (aq)", names: { es: ["ácido bromhídrico"], ca: ["àcid bromhídric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
+            
+            // --- BINARIOS: ÓXIDOS ---
+            { id: "bin_ox1", category: "binarios", formula: "Fe2O3", names: { es: ["óxido de hierro(III)", "trióxido de dihierro"], ca: ["òxid de ferro(III)", "triòxid de diferro"] }, tip: { es: "Binario: El hierro actúa con +3 y el oxígeno con -2. No se simplifican al cruzar.", ca: "El ferro actua amb +3 i l'oxigen amb -2." } },
+            { id: "bin_ox2", category: "binarios", formula: "CaO", names: { es: ["óxido de calcio", "monóxido de calcio"], ca: ["òxid de calci", "monòxid de calci"] }, tip: { es: "Binario: Las cargas Ca(+2) y O(-2) se cruzan y se simplifican obligatoriamente a CaO.", ca: "Càrregues Ca(+2) i O(-2) es creuen i se simplifiquen." } },
+            { id: "bin_ox3", category: "binarios", formula: "CO2", names: { es: ["dióxido de carbono", "óxido de carbono(IV)"], ca: ["diòxid de carboni", "òxid de carboni(IV)"] }, tip: { es: "Binario: El carbono actúa con +4 y el oxígeno con -2. Se cruza (C2O4) y se simplifica a CO2.", ca: "El carboni actua amb +4 i l'oxigen amb -2. S'obté C2O4 i se simplifica." } },
+            { id: "bin_ox4", category: "binarios", formula: "SO3", names: { es: ["trióxido de azufre", "óxido de azufre(VI)"], ca: ["triòxid de sofre", "òxid de sofre(VI)"] }, tip: { es: "Binario: Azufre (+6) y Oxígeno (-2) se cruzan a S2O6 y simplifican a SO3.", ca: "Sofre (+6) i Oxigen (-2) es creuen a S2O6 i simplifiquen." } },
+            { id: "bin_ox5", category: "binarios", formula: "PbO2", names: { es: ["dióxido de plomo", "óxido de plomo(IV)"], ca: ["diòxid de plom", "òxid de plom(IV)"] }, tip: { es: "Binario: Plomo (+4) y Oxígeno (-2) simplifican a PbO2.", ca: "Plom (+4) i Oxigen (-2) simplifiquen a PbO2." } },
+            { id: "bin_ox6", category: "binarios", formula: "CuO", names: { es: ["óxido de cobre(II)", "monóxido de cobre"], ca: ["òxid de coure(II)", "monòxid de coure"] }, tip: { es: "Cobre (+2) y Oxígeno (-2) simplifican a CuO.", ca: "Coure (+2) i Oxigen (-2) simplifiquen." } },
+            { id: "bin_ox7", category: "binarios", formula: "Al2O3", names: { es: ["óxido de aluminio", "trióxido de dialuminio"], ca: ["òxid d'alumini", "triòxid de dialumini"] }, tip: { es: "El aluminio tiene valencia única +3, no requiere números romanos.", ca: "L'alumini té valència única +3." } },
+            { id: "bin_ox8", category: "binarios", formula: "N2O5", names: { es: ["pentaóxido de dinitrógeno", "óxido de nitrógeno(V)"], ca: ["pentaòxid de dinitrogen", "òxid de nitrogen(V)"] }, tip: { es: "El nitrógeno actúa con +5 y el oxígeno con -2.", ca: "El nitrogen actua amb +5." } },
+
+            // --- BINARIOS: PERÓXIDOS ---
+            { id: "bin_perox1", category: "binarios", formula: "H2O2", names: { es: ["peróxido de hidrógeno", "dióxido de dihidrógeno", "agua oxigenada"], ca: ["peròxid d'hidrogen", "diòxid de dihidrogen", "aigua oxigenada"] }, tip: { es: "El grupo peróxido es (O2) con carga -2. No se simplifican los subíndices de la estructura peróxido.", ca: "El grup peròxid és (O2) amb càrrega -2. No se simplifiquen." } },
+            { id: "bin_perox2", category: "binarios", formula: "Na2O2", names: { es: ["peróxido de sodio", "dióxido de disodio"], ca: ["peròxid de sodi", "diòxid de disodi"] }, tip: { es: "Unión de Na(+1) con el grupo peróxido O2(-2).", ca: "Unió de Na(+1) amb el grup peròxid O2(-2)." } },
+            { id: "bin_perox3", category: "binarios", formula: "BaO2", names: { es: ["peróxido de bario", "dióxido de bario"], ca: ["peròxid de bari", "diòxid de bari"] }, tip: { es: "Bario (+2) y grupo peróxido O2(-2) simplifican la parte externa a Ba1(O2)1 -> BaO2.", ca: "Bari (+2) i grup peròxid O2(-2)." } },
+
+            // --- BINARIOS: HALUROS DE OXÍGENO (IUPAC 2005) ---
+            { id: "bin_hal1", category: "binarios", formula: "OCl2", names: { es: ["dicloruro de oxígeno"], ca: ["diclorur d'oxigen"] }, tip: { es: "IUPAC 2005: El oxígeno es más electropositivo que el cloro, se escribe a la izquierda y se nombra haluro de oxígeno.", ca: "L'oxigen s'escriu a l'esquerra." } },
+            { id: "bin_hal2", category: "binarios", formula: "OF2", names: { es: ["difluoruro de oxígeno"], ca: ["difluorur d'oxigen"] }, tip: { es: "IUPAC 2005: El flúor es el único elemento más electronegativo que el oxígeno; por eso el flúor va a la derecha.", ca: "El fluor és l'únic element més electronegatiu que l'oxigen." } },
+            { id: "bin_hal3", category: "binarios", formula: "O5Cl2", names: { es: ["dicloruro de pentaoxígeno"], ca: ["diclorur de pentaoxigen"] }, tip: { es: "IUPAC 2005: Haluro de oxígeno donde el oxígeno aporta 5 átomos.", ca: "Halur d'oxigen amb prefix penta- a l'oxigen." } },
+            { id: "bin_hal4", category: "binarios", formula: "O7I2", names: { es: ["diyoduro de heptaoxígeno"], ca: ["diiodur d'heptaoxigen"] }, tip: { es: "IUPAC 2005: Combinación de yodo y oxígeno.", ca: "Combinació de iode i oxigen." } },
+
+            // --- BINARIOS: HIDRUROS METÁLICOS Y NO METÁLICOS ---
+            { id: "bin_hyd1", category: "binarios", formula: "NaH", names: { es: ["hidruro de sodio"], ca: ["hidrur de sodi"] }, tip: { es: "Binario: Hidruro metálico. El hidrógeno actúa con -1.", ca: "Hidrur metàl·lic. L'hidrogen actua amb -1." } },
+            { id: "bin_hyd2", category: "binarios", formula: "CaH2", names: { es: ["hidruro de calcio", "dihidruro de calcio"], ca: ["hidrur de calci", "dihidrur de calci"] }, tip: { es: "Calcio actúa con valencia +2 y el hidrógeno con -1.", ca: "Calci actua amb +2." } },
+            { id: "bin_hyd3", category: "binarios", formula: "AlH3", names: { es: ["hidruro de aluminio", "trihidruro de aluminio"], ca: ["hidrur d'alumini", "trihidrur d'alumini"] }, tip: { es: "Aluminio actúa con +3.", ca: "Alumini actua amb +3." } },
+            { id: "bin_hyd4", category: "binarios", formula: "NH3", names: { es: ["amoníaco", "amoniaco", "azano", "trihidruro de nitrógeno"], ca: ["amoníac", "azà", "trihidrur de nitrogen"] }, tip: { es: "Nombre común 'amoníaco' aceptado universalmente por la IUPAC.", ca: "El nom comú 'amoníac' està acceptat per la IUPAC." } },
+            { id: "bin_hyd5", category: "binarios", formula: "PH3", names: { es: ["fosfano", "trihidruro de fósforo"], ca: ["fosfà", "trihidrur de fòsfor"] }, tip: { es: "Nomenclatura de sustitución: la raíz 'fosf' más la terminación '-ano'.", ca: "S'afegeix la terminació '-à' a l'arrel 'fosf'." } },
+            { id: "bin_hyd6", category: "binarios", formula: "AsH3", names: { es: ["arsano", "trihidruro de arsénico"], ca: ["arsà", "trihidrur d'arsènic"] }, tip: { es: "Hidruro covalente de arsénico.", ca: "Hidrur covalent d'arsènic." } },
+            { id: "bin_hyd7", category: "binarios", formula: "CH4", names: { es: ["metano", "tetrahidruro de carbono"], ca: ["metà", "tetrahidrur de carboni"] }, tip: { es: "El hidruro de carbono por excelencia. Nombre común: Metano.", ca: "El nom acceptat és Metà." } },
+            { id: "bin_hyd8", category: "binarios", formula: "SiH4", names: { es: ["silano", "tetrahidruro de silicio"], ca: ["silà", "tetrahidrur de silici"] }, tip: { es: "Hidruro de silicio.", ca: "Hidrur de silici." } },
+            { id: "bin_hyd9", category: "binarios", formula: "H2O", names: { es: ["agua", "oxidano", "monóxido de dihidrógeno"], ca: ["aigua", "oxidà", "monòxid de dihidrogen"] }, tip: { es: "Agua o oxidano según la IUPAC.", ca: "Aigua o oxidà segons la IUPAC." } },
+
+            // --- BINARIOS: SALES BINARIAS ---
+            { id: "bin_sal1", category: "binarios", formula: "NaCl", names: { es: ["cloruro de sodio"], ca: ["clorur de sodi"] }, tip: { es: "Sal común. Sodio (+1) y Cloro (-1).", ca: "Sal comuna. Sodi (+1) i Clor (-1)." } },
+            { id: "bin_sal2", category: "binarios", formula: "FeCl3", names: { es: ["cloruro de hierro(III)", "tricloruro de hierro"], ca: ["clorur de ferro(III)", "triclorur de ferro"] }, tip: { es: "Sal binaria. El hierro actúa con +3 y el cloro con -1.", ca: "El ferro actua amb +3." } },
+            { id: "bin_sal3", category: "binarios", formula: "Ag2S", names: { es: ["sulfuro de plata", "monosulfuro de diplata"], ca: ["sulfur de plata", "monosulfur de diplata"] }, tip: { es: "La plata solo tiene valencia +1, por lo que no se indica en números romanos.", ca: "La plata només té valència +1." } },
+            { id: "bin_sal4", category: "binarios", formula: "CaF2", names: { es: ["fluoruro de calcio", "difluoruro de calcio"], ca: ["fluorur de calci", "difluorur de calci"] }, tip: { es: "Calcio (+2) y flúor (-1).", ca: "Calci (+2) i fluor (-1)." } },
+            { id: "bin_sal5", category: "binarios", formula: "PbI2", names: { es: ["yoduro de plomo(II)", "diyoduro de plomo"], ca: ["iodur de plom(II)", "diiodur de plom"] }, tip: { es: "Plomo actuando con +2.", ca: "Plom actuant amb +2." } },
+            { id: "bin_sal6", category: "binarios", formula: "CuBr2", names: { es: ["bromuro de cobre(II)", "dibromuro de cobre"], ca: ["bromur de coure(II)", "dibromur de coure"] }, tip: { es: "Cobre actuando con +2.", ca: "Coure actuant amb +2." } },
+
+            // --- TERNARIOS: HIDRÓXIDOS ---
+            { id: "ter_hydrox1", category: "ternarios", formula: "Ca(OH)2", names: { es: ["hidróxido de calcio", "dihidróxido de calcio"], ca: ["hidròxid de calci", "dihidròxid de calci"] }, tip: { es: "Los hidróxidos contienen el grupo poliatómico (OH) con carga -1.", ca: "Contenen el grup (OH) amb càrrega -1." } },
+            { id: "ter_hydrox2", category: "ternarios", formula: "Al(OH)3", names: { es: ["hidróxido de aluminio", "trihidróxido de aluminio"], ca: ["hidròxid d'alumini", "trihidròxid d'alumini"] }, tip: { es: "Al no tener más valencias, en Stock no requiere número romano.", ca: "En no tenir més valències, a Stock no cal nombre romà." } },
+            { id: "ter_hydrox3", category: "ternarios", formula: "KOH", names: { es: ["hidróxido de potasio"], ca: ["hidròxid de potassi"] }, tip: { es: "Al cruzar cargas +1 y -1, no se ponen paréntesis alrededor del grupo OH.", ca: "No es posen parèntesis en càrregues 1:1." } },
+            { id: "ter_hydrox4", category: "ternarios", formula: "Fe(OH)3", names: { es: ["hidróxido de hierro(III)", "trihidróxido de hierro"], ca: ["hidròxid de ferro(III)", "trihidròxid de ferro"] }, tip: { es: "Hierro actuando con la mayor valencia.", ca: "Ferro actuant amb la major valència." } },
+            { id: "ter_hydrox5", category: "ternarios", formula: "NaOH", names: { es: ["hidróxido de sodio"], ca: ["hidròxid de sodi"] }, tip: { es: "Sosa cáustica. Base muy fuerte.", ca: "Sosa càustica. Base molt forta." } },
+
+            // --- TERNARIOS: OXOÁCIDOS (COMPLETOS) ---
+            { id: "ter_acid1", category: "ternarios", formula: "H2SO4", names: { es: ["ácido sulfúrico", "tetraoxidosulfato de dihidrógeno"], ca: ["àcid sulfúric", "tetraoxidosulfat de dihidrogen"] }, tip: { es: "Oxoácido de azufre con estado de oxidación +6.", ca: "Oxoàcid de sofre amb estat d'oxidació +6." } },
+            { id: "ter_acid2", category: "ternarios", formula: "H2SO3", names: { es: ["ácido sulfuroso", "trioxidosulfato de dihidrógeno"], ca: ["àcid sulfurós", "trioxidosulfat de dihidrogen"] }, tip: { es: "Azufre con estado de oxidación +4 (terminación -oso).", ca: "Sofre amb estat d'oxidació +4." } },
+            { id: "ter_acid3", category: "ternarios", formula: "HNO3", names: { es: ["ácido nítrico", "trioxidonitrato de hidrógeno"], ca: ["àcid nítric", "trioxidonitrat d'hidrogen"] }, tip: { es: "Nitrógeno actúa con su máximo estado de oxidación de +5.", ca: "Nitrogen actua amb estat d'oxidació +5." } },
+            { id: "ter_acid4", category: "ternarios", formula: "HNO2", names: { es: ["ácido nitroso", "dioxidonitrato de hidrógeno"], ca: ["àcid nitrós", "dioxidonitrat d'hidrogen"] }, tip: { es: "Nitrógeno con +3.", ca: "Nitrogen amb +3." } },
+            { id: "ter_acid5", category: "ternarios", formula: "HClO4", names: { es: ["ácido perclórico", "tetraoxidoclorato de hidrógeno"], ca: ["àcid perclòric", "tetraoxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +7 (per- y -ico).", ca: "Clor amb +7." } },
+            { id: "ter_acid6", category: "ternarios", formula: "HClO3", names: { es: ["ácido clórico", "trioxidoclorato de hidrógeno"], ca: ["àcid clòric", "trioxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +5 (-ico).", ca: "Clor amb +5." } },
+            { id: "ter_acid7", category: "ternarios", formula: "HClO2", names: { es: ["ácido cloroso", "dioxidoclorato de hidrógeno"], ca: ["àcid clorós", "dioxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +3 (-oso).", ca: "Clor amb +3." } },
+            { id: "ter_acid8", category: "ternarios", formula: "HClO", names: { es: ["ácido hipocloroso", "monoxidoclorato de hidrógeno"], ca: ["àcid hipoclorós", "monoxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +1 (hipo- y -oso).", ca: "Clor amb +1." } },
+            { id: "ter_acid9", category: "ternarios", formula: "H3PO4", names: { es: ["ácido fosfórico", "ácido ortofosfórico", "tetraoxidofosfato de trihidrógeno"], ca: ["àcid fosfòric", "àcid ortofosfòric", "tetraoxidofosfat de trihidrogen"] }, tip: { es: "Fosfórico común es la forma orto- (3 moléculas de H2O teóricas).", ca: "Forma orto- per defecte." } },
+            { id: "ter_acid10", category: "ternarios", formula: "H2CO3", names: { es: ["ácido carbónico", "trioxidocarbonato de dihidrógeno"], ca: ["àcid carbònic", "trioxidocarbonat de dihidrogen"] }, tip: { es: "Único oxoácido común del carbono (+4).", ca: "Únic oxoàcid comú del carboni (+4)." } },
+            { id: "ter_acid11", category: "ternarios", formula: "H2CrO4", names: { es: ["ácido crómico", "tetraoxidocromato de dihidrógeno"], ca: ["àcid cròmic", "tetraoxidocromat de dihidrogen"] }, tip: { es: "Cromo actuando como no metal con +6.", ca: "Crom actuant amb +6." } },
+            { id: "ter_acid12", category: "ternarios", formula: "H2Cr2O7", names: { es: ["ácido dicrómico", "heptaoxidodicromato de dihidrógeno"], ca: ["àcid dicròmic", "heptaoxidodicromat de dihidrogen"] }, tip: { es: "Ácido polimerizado del cromo (+6).", ca: "Àcid polimeritzat del crom (+6)." } },
+            { id: "ter_acid13", category: "ternarios", formula: "HMnO4", names: { es: ["ácido permangánico", "tetraoxidomanganato de hidrógeno"], ca: ["àcid permangànic", "tetraoxidomanganat d'hidrogen"] }, tip: { es: "Manganeso con valencia +7 (ácido muy oxidante).", ca: "Manganès amb valència +7." } },
+
+            // --- TERNARIOS: OXOSALES ---
+            { id: "ter_salt1", category: "ternarios", formula: "CaCO3", names: { es: ["carbonato de calcio", "trioxidocarbonato de calcio"], ca: ["carbonat de calci", "trioxidocarbonat de calci"] }, tip: { es: "Sal neutra derivada del ácido carbónico. Anión CO3(2-).", ca: "Sal neutra. L'anió carbonat és CO3(2-)." } },
+            { id: "ter_salt2", category: "ternarios", formula: "NaClO", names: { es: ["hipoclorito de sodio", "monoxidoclorato de sodio"], ca: ["hipoclorit de sodi", "monoxidoclorat de sodi"] }, tip: { es: "Proviene del ácido hipocloroso (HClO), de ahí el sufijo -ito.", ca: "Prové de l'àcid hipoclorós, d'aquí -it." } },
+            { id: "ter_salt3", category: "ternarios", formula: "KMnO4", names: { es: ["permanganato de potasio", "tetraoxidomanganato de potasio"], ca: ["permanganat de potassi", "tetraoxidomanganat de potassi"] }, tip: { es: "Oxosal del manganeso actuando con +7.", ca: "Oxosal de manganès actuant amb +7." } },
+            { id: "ter_salt4", category: "ternarios", formula: "CuSO4", names: { es: ["sulfato de cobre(II)", "tetraoxidosulfato de cobre", "sulfato de cobre(2+)"], ca: ["sulfat de coure(II)", "tetraoxidosulfat de coure", "sulfat de coure(2+)"] }, tip: { es: "Sulfato (-2) y cobre (+2) simplifican.", ca: "Sulfat (-2) i coure (+2) se simplifica." } },
+            { id: "ter_salt5", category: "ternarios", formula: "KNO3", names: { es: ["nitrato de potasio", "trioxidonitrato de potasio"], ca: ["nitrat de potassi", "trioxidonitrat de potassi"] }, tip: { es: "El ion nitrato (NO3-) se combina con el potasio (+1).", ca: "L'ió nitrat es combina amb el potassi." } },
+            { id: "ter_salt6", category: "ternarios", formula: "(NH4)2SO4", names: { es: ["sulfato de amonio", "tetraoxidosulfato de amonio"], ca: ["sulfat d'amoni", "tetraoxidosulfat d'amoni"] }, tip: { es: "Catión poliatómico amonio (NH4+) requiere paréntesis al cruzarse con el 2 del sulfato.", ca: "El catió amoni requereix parèntesi." } },
+            { id: "ter_salt7", category: "ternarios", formula: "Fe(NO3)3", names: { es: ["nitrato de hierro(III)", "trioxidonitrato de hierro(III)"], ca: ["nitrat de ferro(III)", "trioxidonitrat de ferro(III)"] }, tip: { es: "El anión nitrato lleva paréntesis por la valencia 3 del hierro.", ca: "L'anió nitrat porta parèntesis." } },
+            { id: "ter_salt8", category: "ternarios", formula: "K2Cr2O7", names: { es: ["dicromato de potasio", "heptaoxidodicromato de dipotasio"], ca: ["dicromat de potassi", "heptaoxidodicromat de dipotassi"] }, tip: { es: "Sal clave en volumetrías redox (PAU).", ca: "Sal clau a la PAU." } },
+            { id: "ter_salt9", category: "ternarios", formula: "Na3PO4", names: { es: ["fosfato de sodio", "tetraoxidofosfato de trisodio"], ca: ["fosfat de sodi", "tetraoxidofosfat de trisodi"] }, tip: { es: "Sal derivada del ácido fosfórico perdiendo sus 3 protones.", ca: "Deriva de l'àcid fosfòric (perd 3 H)." } },
+
+            // --- CUATERNARIOS: SALES ÁCIDAS ---
+            { id: "quat_salt1", category: "cuaternarios", formula: "NaHCO3", names: { es: ["hidrógenocarbonato de sodio", "hidrogenocarbonato de sodio"], ca: ["hidrogencarbonat de sodi"] }, tip: { es: "Sal ácida. Conserva un hidrógeno sustituible del H2CO3.", ca: "Sal àcida. Conserva un hidrogen de l'àcid original." } },
+            { id: "quat_salt2", category: "cuaternarios", formula: "NaHSO4", names: { es: ["hidrógenosulfato de sodio", "hidrogenosulfato de sodio"], ca: ["hidrogensulfat de sodi"] }, tip: { es: "Sustitución parcial del ácido sulfúrico.", ca: "Substitució parcial de l'àcid sulfúric." } },
+            { id: "quat_salt3", category: "cuaternarios", formula: "K2HPO4", names: { es: ["hidrógenofosfato de potasio", "hidrogenofosfato de dipotasio"], ca: ["hidrogenfosfat de potassi", "hidrogenfosfat de dipotassi"] }, tip: { es: "El H3PO4 ha perdido dos protones, dejando el anión HPO4(2-).", ca: "L'àcid ha perdut dos protons." } },
+            { id: "quat_salt4", category: "cuaternarios", formula: "KH2PO4", names: { es: ["dihidrógenofosfato de potasio", "dihidrogenofosfato de potasio"], ca: ["dihidrogenfosfat de potassi"] }, tip: { es: "El H3PO4 pierde un protón, dejando H2PO4(-).", ca: "L'àcid perd un sol protó." } },
+            { id: "quat_salt5", category: "cuaternarios", formula: "Ca(HCO3)2", names: { es: ["hidrógenocarbonato de calcio", "bis(hidrogenocarbonato) de calcio"], ca: ["hidrogencarbonat de calci", "bis(hidrogencarbonat) de calci"] }, tip: { es: "El anión hidrogenocarbonato (carga -1) se cruza con el calcio (+2).", ca: "Necessita multiplicar-se per 2 pel calci." } }
+        ];
+
+        // --- BASE DE DATOS DE ERRORES DIAGNÓSTICOS INTERACTIVOS (AMPLIADA) ---
+        const COMMON_ERRORS = [
+            {
+                incorrect: "Ca₂O₂",
+                type: "Compostos iònics",
+                correct: "CaO",
+                title: { es: "¿Por qué Ca₂O₂ es incorrecto para el óxido de calcio?", ca: "Per què Ca₂O₂ és incorrecte per a l'òxid de calci?" },
+                options: {
+                    es: [
+                        { id: "opt1", text: "Es obligatorio simplificar los subíndices en las redes cristalinas iónicas.", isCorrect: true },
+                        { id: "opt2", text: "El calcio solo tiene valencia +1, por lo que sería Ca2O.", isCorrect: false },
+                        { id: "opt3", text: "El oxígeno no puede tener subíndice 2.", isCorrect: false }
+                    ],
+                    ca: [
+                        { id: "opt1", text: "És obligatori simplificar els subíndexs en les xarxes cristal·lines iòniques.", isCorrect: true },
+                        { id: "opt2", text: "El calci només té valència +1, per la qual cosa seria Ca2O.", isCorrect: false },
+                        { id: "opt3", text: "L'oxigen no pot tenir subíndex 2.", isCorrect: false }
+                    ]
+                },
+                explanation: {
+                    es: "¡Excelente! A diferencia de las moléculas discretas (covalentes), los compuestos iónicos forman redes. Sus fórmulas son empíricas e indican la proporción mínima. Si se cruzan un +2 y un -2, la proporción es 1:1, así que <strong>CaO</strong> es lo correcto.",
+                    ca: "Excel·lent! A diferència de les molècules discretes, els compostos iònics formen xarxes. Les seves fórmules són empíriques i indiquen la proporció mínima. 2:2 es simplifica a 1:1, donant <strong>CaO</strong>."
+                }
+            },
+            {
+                incorrect: "ClNa",
+                type: "Ordre dels elements",
+                correct: "NaCl",
+                title: { es: "¿Por qué el cloruro de sodio no se escribe ClNa?", ca: "Per què el clorur de sodi no s'escriu ClNa?" },
+                options: {
+                    es: [
+                        { id: "opt1", text: "El símbolo del sodio es Na, no N.", isCorrect: false },
+                        { id: "opt2", text: "La parte positiva (metal) siempre se escribe a la izquierda de la fórmula.", isCorrect: true },
+                        { id: "opt3", text: "Faltan los estados de oxidación en números romanos.", isCorrect: false }
+                    ],
+                    ca: [
+                        { id: "opt1", text: "El símbol del sodi és Na, no N.", isCorrect: false },
+                        { id: "opt2", text: "La part positiva (metall) sempre s'escriu a l'esquerra de la fórmula.", isCorrect: true },
+                        { id: "opt3", text: "Falten els estats d'oxidació en nombres romans.", isCorrect: false }
+                    ]
+                },
+                explanation: {
+                    es: "¡Exacto! Según la IUPAC, en una fórmula química el constituyente electropositivo (catión/metal) se escribe primero, seguido del electronegativo (anión/no metal). Por eso se formula <strong>NaCl</strong> aunque al leerlo en español se diga 'cloruro de sodio'.",
+                    ca: "Exacte! Segons la IUPAC, en una fórmula química el constituent electropositiu (metall) s'escriu primer, seguit de l'electronegatiu. Per això es formula <strong>NaCl</strong>."
+                }
+            },
+            {
+                incorrect: "KNO₂",
+                type: "Sufixos -ito / -ato",
+                correct: "KNO₃",
+                title: { es: "¿Por qué KNO₂ no es el Nitrato de potasio?", ca: "Per què KNO₂ no és el Nitrat de potassi?" },
+                options: {
+                    es: [
+                        { id: "opt1", text: "El sufijo -ato corresponde a la valencia mayor (+5). KNO₂ usa la valencia menor (+3) siendo el nitrito.", isCorrect: true },
+                        { id: "opt2", text: "El potasio requiere un subíndice 2 para equilibrar la molécula.", isCorrect: false },
+                        { id: "opt3", text: "El nitrato no lleva oxígeno.", isCorrect: false }
+                    ],
+                    ca: [
+                        { id: "opt1", text: "El sufix -at correspon a la valència major (+5). KNO₂ usa la menor (+3) sent el nitrit.", isCorrect: true },
+                        { id: "opt2", text: "El potassi requereix un subíndex 2 per equilibrar la molècula.", isCorrect: false },
+                        { id: "opt3", text: "El nitrat no porta oxigen.", isCorrect: false }
+                    ]
+                },
+                explanation: {
+                    es: "¡Muy bien! Recuerda la regla: el ácido terminado en <em>-ico</em> (nítrico, +5) forma sales terminadas en <em>-ato</em> (nitrato). El ácido terminado en <em>-oso</em> (nitroso, +3) forma sales terminadas en <em>-ito</em> (nitrito). Por tanto, el nitrato es <strong>KNO₃</strong>.",
+                    ca: "Molt bé! Recorda la regla: l'àcid acabat en <em>-ic</em> (+5) forma sals acabades en <em>-at</em> (nitrat). L'àcid en <em>-ós</em> (+3) forma sals en <em>-it</em> (nitrit). Així, el nitrat és <strong>KNO₃</strong>."
+                }
+            },
+            {
+                incorrect: "NaOH",
+                type: "Binari / Ternari",
+                correct: "NaH",
+                title: { es: "¿Por qué NaOH no es el Hidruro de Sodio?", ca: "Per què NaOH no és l'Hidrur de Sodi?" },
+                options: {
+                    es: [
+                        { id: "opt1", text: "El sodio no se puede combinar con hidrógeno directamente.", isCorrect: false },
+                        { id: "opt2", text: "Contiene el grupo oxhidrilo (OH) correspondiente a un hidróxido, no a un hidruro.", isCorrect: true },
+                        { id: "opt3", text: "Falta añadir un subíndice 2 en el sodio.", isCorrect: false }
+                    ],
+                    ca: [
+                        { id: "opt1", text: "El sodi no es pot combinar amb hidrogen directament.", isCorrect: false },
+                        { id: "opt2", text: "Conté el grup oxhidril (OH) corresponent a un hidròxid, no a un hidrur.", isCorrect: true },
+                        { id: "opt3", text: "Falta afegir un subíndex 2 al sodi.", isCorrect: false }
+                    ]
+                },
+                explanation: {
+                    es: "¡Exacto! El grupo <strong>-OH</strong> es característico de los hidróxidos (compuestos ternarios). El hidruro de sodio es un compuesto binario: <strong>NaH</strong>.",
+                    ca: "Exacte! El grup <strong>-OH</strong> és característic dels hidròxids (compostos ternaris). L'hidrur de sodi és un compost binari: <strong>NaH</strong>."
+                }
+            },
+            {
+                incorrect: "HCl (aq) nombrado como cloruro de hidrógeno",
+                type: "Fases / Hidrácidos",
+                correct: "HCl (aq) nombrado como ácido clorhídrico",
+                title: { es: "¿Por qué 'cloruro de hidrógeno' es erróneo para el HCl (aq)?", ca: "Per què 'clorur d'hidrogen' és erroni per a l'HCl (aq)?" },
+                options: {
+                    es: [
+                        { id: "opt1", text: "Esa nomenclatura se reserva para la fase gaseosa (g). En disolución acuosa es un ácido.", isCorrect: true },
+                        { id: "opt2", text: "El cloro en agua tiene valencia +3.", isCorrect: false },
+                        { id: "opt3", text: "Es obligatorio usar el prefijo 'mono-'.", isCorrect: false }
+                    ],
+                    ca: [
+                        { id: "opt1", text: "Aquesta nomenclatura es reserva per a la fase gasosa (g). En dissolució aquosa és un àcid.", isCorrect: true },
+                        { id: "opt2", text: "El clor en aigua té valència +3.", isCorrect: false },
+                        { id: "opt3", text: "És obligatori fer servir el prefix 'mono-'.", isCorrect: false }
+                    ]
+                },
+                explanation: {
+                    es: "¡Perfecto! El nombre 'cloruro de hidrógeno' corresponde estrictamente al estado gaseoso (g). Cuando está disuelto en agua (aq), manifiesta propiedades ácidas y debe nombrarse como <strong>ácido clorhídrico</strong>.",
+                    ca: "Perfecte! El nom 'clorur d'hidrogen' correspon a l'estat gasós (g). Dissolt en aigua (aq), manifesta propietats àcides i s'ha d'anomenar <strong>àcid clorhídric</strong>."
+                }
+            }
+        ];
+
+        // --- DICCIONARIO BILINGÜE ---
+        const LOCALIZATION = {
+            es: {
+                subtitle: "Dpto. Física y Química — Elena Ruiz Alfaro",
+                racha: "Racha:",
+                tabQuiz: "Practica y Aprende",
+                tabLab: "Laboratorio de Fórmulas",
+                tabErrors: "De los Errores Aprendemos",
+                tabGuide: "Guía de Estudio",
+                chooseCat: "Selecciona Categoría",
+                writeFormula: "Escribe la fórmula",
+                writeName: "Nombra el compuesto",
+                placeholder: "Escribe aquí tu respuesta...",
+                check: "Comprobar Respuesta",
+                skip: "Siguiente",
+                labTitle: "Laboratorio de Cruce de Valencias",
+                labDesc: "Selecciona un catión y un anión (incluso poliatómicos) para visualizar cómo se intercambian las valencias y se colocan paréntesis si son necesarios.",
+                cationes: "1. Catión (+)",
+                aniones: "2. Anión o Grupo (-)",
+                visualizer: "3. Simulación y Reglas",
+                btnCombine: "Cruce e Intercambio",
+                formulaObtenida: "Fórmula Resultante",
+                nomEsteq: "Nomenclatura Sistemática:",
+                nomStock: "Nomenclatura de Stock:",
+                errTitle: "Dels Errors Aprenem — Cazador de Errores",
+                errDesc: "La PAU penaliza fuertemente estos fallos habituales. Analiza el compuesto erróneo e intenta deducir el motivo del fallo para revelar la explicación correcta.",
+                ptTitle: "Valencias y Estados de Oxidación Clave",
+                ptDesc: "Tabla de referencia recomendada por la UIB de cara a la evaluación de Bachillerato.",
+                rulesTitle: "Directrices de Formulación IUPAC 2005",
+                r1Title: "Haluros de Oxígeno (Cambio Radical)",
+                r1Desc: "Según la secuencia de electronegatividad IUPAC 2005, el oxígeno se sitúa a la izquierda de todos los halógenos (F, Cl, Br, I), excepto del Flúor. Por tanto, se formula como: OCl₂ (dicloruro de oxígeno) y no Cl₂O.",
+                r2Title: "Uso estricto de nomenclaturas",
+                r2Desc: "No se permite la mezcla de prefijos sistemáticos y números de oxidación (Stock). Ejemplo: 'dicloruro de cobre(II)' es un error grave.",
+                quizPrompt: "Compuesto:",
+                configSession: "Configuración",
+                studentName: "Nombre del alumno/a:",
+                questionMode: "Modalidad",
+                exportPdf: "Generar PDF de Sesión",
+                lblTimer: "Tiempo:"
+            },
+            ca: {
+                subtitle: "Dept. Física i Química — Elena Ruiz Alfaro",
+                racha: "Ratxa:",
+                tabQuiz: "Practica i Aprèn",
+                tabLab: "Laboratori de Fórmules",
+                tabErrors: "Dels Errors Aprenem",
+                tabGuide: "Guia d'Estudi",
+                chooseCat: "Selecciona Categoria",
+                writeFormula: "Escriu la fórmula",
+                writeName: "Nomena el compost",
+                placeholder: "Escriu aquí la teva resposta...",
+                check: "Comprova Resposta",
+                skip: "Següent",
+                labTitle: "Laboratori de Creuament de Valències",
+                labDesc: "Selecciona un catió i un anió (inclus poliatòmics) per a veure pas a pas com s'intercanvien i es simplifiquen les valències.",
+                cationes: "1. Catió (+)",
+                aniones: "2. Anió o Grup (-)",
+                visualizer: "3. Simulació i Intercanvi",
+                btnCombine: "Creuament i Formular",
+                formulaObtenida: "Fórmula Resultant",
+                nomEsteq: "Nomenclatura Sistemàtica:",
+                nomStock: "Nomenclatura de Stock:",
+                errTitle: "Dels Errors Aprenem — Caçador d'Errors",
+                errDesc: "La PAU penalitza fortament aquests errors habituals. Analitza el compost erroni i intenta deduir el motiu per revelar l'explicació correcta.",
+                ptTitle: "Valències i Estats d'Oxidació Claus",
+                ptDesc: "Taula de referència recomanada per la UIB de cara a l'avaluació de Batxillerat.",
+                rulesTitle: "Directrius de Formulació IUPAC 2005",
+                r1Title: "Halurs d'Oxigen (Canvi Radical)",
+                r1Desc: "Segons la norma IUPAC 2005 d'electronegativitat, l'Oxigen va a l'esquerra de Cl, Br i I. Es nomena com a halur d'oxigen (Ex: OCl₂). El fluor és l'únic que va a la dreta.",
+                r2Title: "Ús estricte de nomenclatures",
+                r2Desc: "No es permet la barreja de prefixos sistemàtics i nombres d'oxidació (Stock). Exemple: 'diclorur de coure(II)' és un error greu a PAU.",
+                quizPrompt: "Compost:",
+                configSession: "Configuració",
+                studentName: "Nom de l'alumne/a:",
+                questionMode: "Modalitat",
+                exportPdf: "Generar PDF de Sessió",
+                lblTimer: "Temps:"
+            }
+        };
+
+        // --- ESTADO GLOBAL DE LA APLICACIÓN ---
+        let CURRENT_LANG = "es";
+        let CURRENT_SCORE = 0; // Racha actual
+        let MAX_SCORE = 0;     // Racha máxima (récord)
+        let TOTAL_CORRECT = 0; // Aciertos totales acumulados
+        let ACTIVE_CATEGORY = "all";
+        let QUIZ_MODE = "formula"; // "formula", "name" o "mixed"
+        let CURRENT_QUESTION = null;
+        let currentQuestionMode = "formula"; 
+        let STUDENT_NAME = "";
+
+        // Historial detallado de la sesión para el Informe PDF
+        let SESSION_HISTORY = [];
+
+        // --- CRONÓMETRO ---
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let timerIsRunning = false;
+
+        function startTimer() {
+            if (timerIsRunning) return;
+            timerIsRunning = true;
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('btn-timer-play');
+            if (timerIsRunning) {
+                clearInterval(timerInterval);
+                timerIsRunning = false;
+                btn.innerText = "▶️";
+            } else {
+                startTimer();
+                btn.innerText = "⏸️";
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            timerIsRunning = false;
+            updateTimerDisplay();
+            const btn = document.getElementById('btn-timer-play');
+            btn.innerText = "▶️";
+            toggleTimer();
+        }
+
+        function updateTimerDisplay() {
+            const min = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const sec = (timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${min}:${sec}`;
+        }
+
+        // --- CORRECCIÓN AVANZADA DE SUBÍNDICES QUÍMICOS ---
+        function renderFormula(formula) {
+            if (!formula) return "";
+            // Esta expresión regular encuentra números y los envuelve en subíndices, respetando (g) o (aq)
+            return formula.replace(/(\d+)/g, '<sub>$1</sub>');
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.addEventListener('DOMContentLoaded', () => {
+            setLanguage('es');
+            loadQuestion();
+            buildLabSelectors();
+            buildErrorsGrid();
+            buildElementsGrid();
+            startTimer();
+        });
+
+        // --- TRADUCCIÓN DINÁMICA ---
+        function setLanguage(lang) {
+            CURRENT_LANG = lang;
+            
+            const btnEs = document.getElementById('btn-lang-es');
+            const btnCa = document.getElementById('btn-lang-ca');
+            if (lang === 'es') {
+                btnEs.className = "px-3 py-1 rounded-md font-semibold transition duration-200 bg-white text-indigo-600 shadow-sm";
+                btnCa.className = "px-3 py-1 rounded-md font-semibold transition duration-200 text-slate-500 hover:text-slate-800";
+            } else {
+                btnCa.className = "px-3 py-1 rounded-md font-semibold transition duration-200 bg-white text-indigo-600 shadow-sm";
+                btnEs.className = "px-3 py-1 rounded-md font-semibold transition duration-200 text-slate-500 hover:text-slate-800";
+            }
+
+            const keys = LOCALIZATION[lang];
+            document.getElementById('subtitulo-docente').innerText = keys.subtitle;
+            document.getElementById('txt-score-label').innerText = keys.racha;
+            document.getElementById('lbl-tab-quiz').innerText = keys.tabQuiz;
+            document.getElementById('lbl-tab-lab').innerText = keys.tabLab;
+            document.getElementById('lbl-tab-errors').innerText = keys.tabErrors;
+            document.getElementById('lbl-tab-guide').innerText = keys.tabGuide;
+            document.getElementById('lbl-select-cat').innerText = keys.chooseCat;
+            document.getElementById('lbl-quiz-prompt').innerText = (currentQuestionMode === 'formula') 
+                ? (lang === 'es' ? 'Fórmula del compuesto:' : 'Fórmula del compost:')
+                : (lang === 'es' ? 'Nombra el compuesto:' : 'Nomena el compost:');
+            document.getElementById('quiz-input').placeholder = keys.placeholder;
+            document.getElementById('btn-submit-answer').innerText = keys.check;
+            document.getElementById('btn-skip').innerText = keys.skip;
+            
+            document.getElementById('lab-title').innerText = keys.labTitle;
+            document.getElementById('lab-desc').innerText = keys.labDesc;
+            document.getElementById('lbl-cationes').innerText = keys.cationes;
+            document.getElementById('lbl-aniones').innerText = keys.aniones;
+            document.getElementById('lbl-visualizer').innerText = keys.visualizer;
+            document.getElementById('btn-combine').innerText = keys.btnCombine;
+            document.getElementById('lbl-formula-obtenida').innerText = keys.formulaObtenida;
+            document.getElementById('lbl-nom-esteq').innerText = keys.nomEsteq;
+            document.getElementById('lbl-nom-stock').innerText = keys.nomStock;
+
+            document.getElementById('err-title').innerText = keys.errTitle;
+            document.getElementById('err-desc').innerText = keys.errDesc;
+
+            document.getElementById('guide-pt-title').innerText = keys.ptTitle;
+            document.getElementById('guide-pt-desc').innerText = keys.ptDesc;
+            document.getElementById('guide-rules-title').innerText = keys.rulesTitle;
+            document.getElementById('guide-r1-title').innerText = keys.r1Title;
+            document.getElementById('guide-r1-desc').innerText = keys.r1Desc;
+            document.getElementById('guide-r2-title').innerText = keys.r2Title;
+            document.getElementById('guide-r2-desc').innerText = keys.r2Desc;
+
+            document.getElementById('lbl-config-session').innerText = keys.configSession;
+            document.getElementById('lbl-student-name').innerText = keys.studentName;
+            document.getElementById('lbl-question-mode').innerText = keys.questionMode;
+            document.getElementById('lbl-export-pdf').innerText = keys.exportPdf;
+            document.getElementById('lbl-timer').innerText = keys.lblTimer;
+
+            document.getElementById('lbl-aciertos-header').innerText = lang === 'es' ? 'Aciertos:' : 'Encerts:';
+            document.getElementById('lbl-record-header').innerText = lang === 'es' ? 'Récord:' : 'Rècord:';
+            document.getElementById('lbl-aciertos-mobile').innerText = lang === 'es' ? 'Aciertos' : 'Encerts';
+            document.getElementById('lbl-record-mobile').innerText = lang === 'es' ? 'Récord' : 'Rècord';
+
+            buildCategoriesMenu();
+            buildLabSelectors();
+            buildErrorsGrid();
+            buildElementsGrid();
+            if (CURRENT_QUESTION) {
+                renderQuestion(); // Re-render target with new language
+            }
+        }
+
+        function switchTab(tabId) {
+            const tabs = ['quiz', 'lab', 'errors', 'guide'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                if (t === tabId) {
+                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition duration-200 bg-white text-indigo-600 shadow-sm border border-slate-200";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function setQuizMode(mode) {
+            QUIZ_MODE = mode;
+            const btnFormula = document.getElementById('btn-mode-formula');
+            const btnName = document.getElementById('btn-mode-name');
+            const btnMixed = document.getElementById('btn-mode-mixed');
+            
+            btnFormula.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+            btnName.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+            btnMixed.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+
+            if (mode === 'formula') btnFormula.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            else if (mode === 'name') btnName.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            else btnMixed.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            
+            loadQuestion();
+        }
+
+        function updateStudentName() {
+            STUDENT_NAME = document.getElementById('student-name-input').value.trim();
+        }
+
+        function buildCategoriesMenu() {
+            const container = document.getElementById('categories-list');
+            container.innerHTML = "";
+            Object.keys(CATEGORIES).forEach(cat => {
+                const button = document.createElement('button');
+                const isSelected = ACTIVE_CATEGORY === cat;
+                button.className = `w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition duration-150 border ${
+                    isSelected 
+                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700 shadow-sm' 
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                }`;
+                button.innerText = CATEGORIES[cat][CURRENT_LANG];
+                button.onclick = () => {
+                    ACTIVE_CATEGORY = cat;
+                    buildCategoriesMenu();
+                    loadQuestion();
+                };
+                container.appendChild(button);
+            });
+        }
+
+        function loadQuestion() {
+            let pool = DATABASE;
+            if (ACTIVE_CATEGORY !== "all") {
+                pool = DATABASE.filter(q => q.category === ACTIVE_CATEGORY);
+            }
+
+            const index = Math.floor(Math.random() * pool.length);
+            CURRENT_QUESTION = pool[index];
+
+            if (QUIZ_MODE === "mixed") {
+                currentQuestionMode = Math.random() < 0.5 ? "formula" : "name";
+            } else {
+                currentQuestionMode = QUIZ_MODE;
+            }
+
+            document.getElementById('quiz-feedback-box').classList.add('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const categoryLabel = CATEGORIES[CURRENT_QUESTION.category][CURRENT_LANG];
+            document.getElementById('quiz-badge-category').innerText = categoryLabel;
+
+            if (currentQuestionMode === "formula") {
+                document.getElementById('quiz-question-type').innerText = CURRENT_LANG === 'es' ? "Escribe la fórmula" : "Escriu la fórmula";
+                document.getElementById('lbl-quiz-prompt').innerText = CURRENT_LANG === 'es' ? "Fórmula de:" : "Fórmula de:";
+                const targetName = CURRENT_QUESTION.names[CURRENT_LANG][0]; 
+                document.getElementById('quiz-target-name').innerText = targetName;
+            } else {
+                document.getElementById('quiz-question-type').innerText = CURRENT_LANG === 'es' ? "Nombra el compuesto" : "Nomena el compost";
+                document.getElementById('lbl-quiz-prompt').innerText = CURRENT_LANG === 'es' ? "Nombre de:" : "Nom de:";
+                document.getElementById('quiz-target-name').innerHTML = renderFormula(CURRENT_QUESTION.formula);
+            }
+            
+            document.getElementById('quiz-input').value = "";
+        }
+
+        function normalizeString(str) {
+            return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '').replace(/[()]/g, '').replace(/[-]/g, '').replace(/₂/g, '2').replace(/₃/g, '3').replace(/₄/g, '4').replace(/₅/g, '5').replace(/₆/g, '6').replace(/₇/g, '7');
+        }
+
+        function checkQuizAnswer() {
+            const studentInput = document.getElementById('quiz-input').value.trim();
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            const feedbackIcon = document.getElementById('quiz-feedback-icon');
+            const feedbackTitle = document.getElementById('quiz-feedback-title');
+            const feedbackText = document.getElementById('quiz-feedback-text');
+            const feedbackDetail = document.getElementById('quiz-feedback-detail');
+
+            if (!studentInput) return;
+
+            let isCorrect = false;
+
+            if (currentQuestionMode === "formula") {
+                isCorrect = normalizeString(studentInput) === normalizeString(CURRENT_QUESTION.formula);
+            } else {
+                const validNames = CURRENT_QUESTION.names[CURRENT_LANG];
+                isCorrect = validNames.some(name => normalizeString(studentInput) === normalizeString(name));
+            }
+
+            // Registrar en historial para el PDF de evaluación
+            SESSION_HISTORY.push({
+                mode: currentQuestionMode,
+                prompt: currentQuestionMode === "formula" ? CURRENT_QUESTION.names[CURRENT_LANG][0] : CURRENT_QUESTION.formula,
+                expected: currentQuestionMode === "formula" ? CURRENT_QUESTION.formula : CURRENT_QUESTION.names[CURRENT_LANG][0],
+                provided: studentInput,
+                isCorrect: isCorrect
+            });
+
+            feedbackBox.classList.remove('hidden');
+            feedbackBox.className = "rounded-3xl p-6 border transition-all duration-300 flex flex-col gap-3 " + 
+                (isCorrect 
+                    ? "bg-emerald-50 border-emerald-500/50 text-emerald-800" 
+                    : "bg-rose-50 border-rose-500/50 text-rose-800");
+
+            if (isCorrect) {
+                CURRENT_SCORE++;
+                TOTAL_CORRECT++;
+                if (CURRENT_SCORE > MAX_SCORE) {
+                    MAX_SCORE = CURRENT_SCORE;
+                }
+                
+                updateScoreboards();
+
+                feedbackIcon.innerText = "🎉";
+                feedbackTitle.innerText = CURRENT_LANG === 'es' ? "¡Respuesta Correcta!" : "Resposta Correcta!";
+                feedbackText.innerHTML = CURRENT_LANG === 'es' 
+                    ? `Excelente trabajo. Has formulado correctamente.` 
+                    : `Excel·lent feina. Has formulat correctament.`;
+
+            } else {
+                CURRENT_SCORE = 0; // Se resetea la racha activa
+                updateScoreboards();
+
+                feedbackIcon.innerText = "❌";
+                feedbackTitle.innerText = CURRENT_LANG === 'es' ? "Respuesta incorrecta" : "Resposta incorrecta";
+                feedbackText.innerHTML = CURRENT_LANG === 'es'
+                    ? `La respuesta esperada era: <strong>${currentQuestionMode === "formula" ? renderFormula(CURRENT_QUESTION.formula) : CURRENT_QUESTION.names[CURRENT_LANG][0]}</strong>`
+                    : `La resposta esperada era: <strong>${currentQuestionMode === "formula" ? renderFormula(CURRENT_QUESTION.formula) : CURRENT_QUESTION.names[CURRENT_LANG][0]}</strong>`;
+            }
+
+            feedbackDetail.innerHTML = `
+                <p class="font-bold text-slate-700 mb-1">${CURRENT_LANG === 'es' ? 'Explicación del docente:' : 'Explicació del docent:'}</p>
+                <p class="text-slate-600 leading-relaxed">${CURRENT_QUESTION.tip[CURRENT_LANG]}</p>
+                <p class="mt-3 text-slate-700 font-bold">${CURRENT_LANG === 'es' ? 'Fórmula de referencia:' : 'Fórmula de referència:'} <span class="mono font-semibold bg-indigo-50 border border-indigo-200 text-indigo-800 px-2.5 py-0.5 rounded text-sm">${renderFormula(CURRENT_QUESTION.formula)}</span></p>
+                <p class="mt-3 text-slate-700 font-bold">${CURRENT_LANG === 'es' ? 'Nombres IUPAC admitidos:' : 'Noms acceptats:'}</p>
+                <ul class="list-disc pl-5 mt-1 text-slate-600 space-y-0.5 font-medium">
+                    ${CURRENT_QUESTION.names[CURRENT_LANG].map(n => `<li class="capitalize">${n}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function updateScoreboards() {
+            document.getElementById('global-score').innerText = CURRENT_SCORE;
+            document.getElementById('global-max-score').innerText = MAX_SCORE;
+            document.getElementById('global-total-correct').innerText = TOTAL_CORRECT;
+            document.getElementById('global-max-score-mobile').innerText = MAX_SCORE;
+            document.getElementById('global-total-correct-mobile').innerText = TOTAL_CORRECT;
+        }
+
+        function nextQuizQuestion() {
+            loadQuestion();
+        }
+
+        function insertAtCursor(char) {
+            const input = document.getElementById('quiz-input');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            input.value = text.substring(0, start) + char + text.substring(end);
+            input.focus();
+            input.selectionStart = input.selectionEnd = start + char.length;
+        }
+
+        function clearQuizInput() {
+            document.getElementById('quiz-input').value = "";
+            document.getElementById('quiz-input').focus();
+        }
+
+        // --- LABORATORIO AMPLIADO DE CRUCE DE VALENCIAS ---
+        const LAB_CATIONS = [
+            { sym: "Na", charge: 1, name: { es: "Sodio", ca: "Sodi" } },
+            { sym: "K", charge: 1, name: { es: "Potasio", ca: "Potassi" } },
+            { sym: "Ag", charge: 1, name: { es: "Plata", ca: "Plata" } },
+            { sym: "Ca", charge: 2, name: { es: "Calcio", ca: "Calci" } },
+            { sym: "Mg", charge: 2, name: { es: "Magnesio", ca: "Magnesi" } },
+            { sym: "Zn", charge: 2, name: { es: "Zinc", ca: "Zinc" } },
+            { sym: "Fe", charge: 3, name: { es: "Hierro(III)", ca: "Ferro(III)" } },
+            { sym: "Fe", charge: 2, name: { es: "Hierro(II)", ca: "Ferro(II)" } },
+            { sym: "Cu", charge: 2, name: { es: "Cobre(II)", ca: "Coure(II)" } },
+            { sym: "Al", charge: 3, name: { es: "Aluminio", ca: "Alumini" } },
+            { sym: "Pb", charge: 4, name: { es: "Plomo(IV)", ca: "Plom(IV)" } },
+            { sym: "NH4", charge: 1, name: { es: "Amonio", ca: "Amoni" }, isPolyatomic: true }
+        ];
+
+        const LAB_ANIONS = [
+            { sym: "O", charge: 2, name: { es: "Óxido", ca: "Òxid" } },
+            { sym: "Cl", charge: 1, name: { es: "Cloruro", ca: "Clorur" } },
+            { sym: "Br", charge: 1, name: { es: "Bromuro", ca: "Bromur" } },
+            { sym: "I", charge: 1, name: { es: "Yoduro", ca: "Iodur" } },
+            { sym: "S", charge: 2, name: { es: "Sulfuro", ca: "Sulfur" } },
+            { sym: "OH", charge: 1, name: { es: "Hidróxido", ca: "Hidròxid" }, isHydroxide: true },
+            { sym: "CO3", charge: 2, name: { es: "Carbonato", ca: "Carbonat" }, isOxoanion: true },
+            { sym: "SO4", charge: 2, name: { es: "Sulfato", ca: "Sulfat" }, isOxoanion: true },
+            { sym: "PO4", charge: 3, name: { es: "Fosfato", ca: "Fosfat" }, isOxoanion: true },
+            { sym: "NO3", charge: 1, name: { es: "Nitrato", ca: "Nitrat" }, isOxoanion: true },
+            { sym: "MnO4", charge: 1, name: { es: "Permanganato", ca: "Permanganat" }, isOxoanion: true }
+        ];
+
+        let selectedCation = LAB_CATIONS[6]; // Fe3+
+        let selectedAnion = LAB_ANIONS[0]; // O2-
+
+        function buildLabSelectors() {
+            const catContainer = document.getElementById('lab-cations-list');
+            const anContainer = document.getElementById('lab-anions-list');
+            catContainer.innerHTML = "";
+            anContainer.innerHTML = "";
+
+            LAB_CATIONS.forEach(cat => {
+                const isSelected = selectedCation === cat;
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    isSelected ? "bg-indigo-50 border-indigo-400 text-indigo-800 shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                }`;
+                btn.innerHTML = `<span class="text-lg font-bold mono">${renderFormula(cat.sym)}<sup>${cat.charge > 1 ? cat.charge : ''}+</sup></span><span class="text-xs mt-0.5 opacity-80 font-medium">${cat.name[CURRENT_LANG]}</span>`;
+                btn.onclick = () => { selectedCation = cat; updateLabVisualizer(); buildLabSelectors(); };
+                catContainer.appendChild(btn);
+            });
+
+            LAB_ANIONS.forEach(an => {
+                const isSelected = selectedAnion === an;
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    isSelected ? "bg-violet-50 border-violet-400 text-violet-800 shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
+                }`;
+                btn.innerHTML = `<span class="text-lg font-bold mono">${renderFormula(an.sym)}<sup>${an.charge > 1 ? an.charge : ''}-</sup></span><span class="text-xs mt-0.5 opacity-80 font-medium">${an.name[CURRENT_LANG]}</span>`;
+                btn.onclick = () => { selectedAnion = an; updateLabVisualizer(); buildLabSelectors(); };
+                anContainer.appendChild(btn);
+            });
+            updateLabVisualizer();
+        }
+
+        function updateLabVisualizer() {
+            document.getElementById('lab-show-cation-sym').innerHTML = renderFormula(selectedCation.sym);
+            document.getElementById('lab-show-cation-chg').innerText = `${selectedCation.charge}+`;
+            document.getElementById('lab-show-anion-sym').innerHTML = renderFormula(selectedAnion.sym);
+            document.getElementById('lab-show-anion-chg').innerText = `${selectedAnion.charge}-`;
+            document.getElementById('lab-result-panel').classList.add('hidden');
+        }
+
+        function gcd(a, b) { return b ? gcd(b, a % b) : a; }
+
+        function combineIons() {
+            const catSym = selectedCation.sym;
+            const anSym = selectedAnion.sym;
+            let catValence = selectedCation.charge;
+            let anValence = selectedAnion.charge;
+
+            let catCount = anValence;
+            let anCount = catValence;
+
+            const divisor = gcd(catCount, anCount);
+            catCount = catCount / divisor;
+            anCount = anCount / divisor;
+
+            // Paréntesis avanzados para aniones o cationes poliatómicos
+            let formattedCation = catSym;
+            if (selectedCation.isPolyatomic && catCount > 1) {
+                formattedCation = `(${catSym})`;
+            }
+
+            let formattedAnion = anSym;
+            if ((selectedAnion.isHydroxide || selectedAnion.isOxoanion) && anCount > 1) {
+                formattedAnion = `(${anSym})`;
+            }
+
+            const finalFormula = `${formattedCation}${catCount > 1 ? catCount : ''}${formattedAnion}${anCount > 1 ? anCount : ''}`;
+
+            let systematicName = "";
+            let stockName = "";
+
+            const prefix = (num) => {
+                const pref = { 1: "mono", 2: "di", 3: "tri", 4: "tetra", 5: "penta", 6: "hexa" };
+                return pref[num] || "";
+            };
+
+            const anionBaseName = selectedAnion.name[CURRENT_LANG];
+            const cationBaseName = selectedCation.name[CURRENT_LANG].replace(/\(.*\)/, ''); // Remove stock roman numerals for base
+
+            const prefAnion = prefix(anCount);
+            const prefCation = catCount > 1 ? prefix(catCount) : "";
+
+            if (CURRENT_LANG === 'es') {
+                systematicName = `${prefAnion}${anionBaseName.toLowerCase()} de ${prefCation}${cationBaseName.toLowerCase()}`;
+                stockName = `${anionBaseName} de ${cationBaseName}`;
+                if (selectedCation.charge > 1 && selectedCation.sym !== "Al" && selectedCation.sym !== "Zn") {
+                    stockName += `(${romanize(selectedCation.charge)})`;
+                }
+            } else {
+                const deWord = cationBaseName.toLowerCase().match(/^[aeiou]/) ? "d'" : "de ";
+                systematicName = `${prefAnion}${anionBaseName.toLowerCase()} ${deWord}${prefCation}${cationBaseName.toLowerCase()}`;
+                stockName = `${anionBaseName} ${deWord}${cationBaseName}`;
+                if (selectedCation.charge > 1 && selectedCation.sym !== "Al" && selectedCation.sym !== "Zn") {
+                    stockName += `(${romanize(selectedCation.charge)})`;
+                }
+            }
+
+            document.getElementById('lab-result-formula').innerHTML = renderFormula(finalFormula);
+            document.getElementById('lab-result-systematic').innerText = systematicName;
+            document.getElementById('lab-result-stock').innerText = stockName;
+            document.getElementById('lab-result-panel').classList.remove('hidden');
+        }
+
+        function romanize(num) {
+            const lookup = { X: 10, IX: 9, V: 5, IV: 4, I: 1 };
+            let roman = '';
+            for (let i in lookup) {
+                while (num >= lookup[i]) { roman += i; num -= lookup[i]; }
+            }
+            return roman;
+        }
+
+        // --- SECCIÓN: DELS ERRORS APRENEM INTERACTIVA ---
+        function buildErrorsGrid() {
+            const grid = document.getElementById('errors-grid');
+            grid.innerHTML = "";
+
+            COMMON_ERRORS.forEach((err, index) => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-4 transition duration-300";
+                card.id = `error-card-${index}`;
+                
+                let optionsHTML = "";
+                err.options[CURRENT_LANG].forEach(opt => {
+                    optionsHTML += `
+                        <button onclick="checkErrorDiagnostic(${index}, '${opt.id}', ${opt.isCorrect})" 
+                                id="btn-error-${index}-${opt.id}"
+                                class="w-full text-left p-3 rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition text-xs font-semibold text-slate-700 flex items-center justify-between gap-3 focus:outline-none">
+                            <span>${opt.text}</span>
+                            <span class="diagnostic-indicator hidden text-sm"></span>
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="space-y-1.5">
+                        <span class="bg-amber-100 text-amber-800 text-xxs px-2.5 py-0.5 rounded-md border border-amber-300 font-bold uppercase tracking-wider">${err.type}</span>
+                        <h4 class="text-base font-bold text-slate-800 mt-1">${err.title[CURRENT_LANG]}</h4>
+                        <p class="text-xs text-slate-500 font-medium">
+                            ${CURRENT_LANG === 'es' ? 'Fórmula incorrecta planteada:' : 'Fórmula incorrecta plantejada:'} 
+                            <span class="mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">${renderFormula(err.incorrect)}</span>
+                        </p>
+                    </div>
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">${CURRENT_LANG === 'es' ? 'Selecciona la explicación del fallo:' : 'Selecciona l\'explicació de l\'error:'}</p>
+                        <div class="flex flex-col gap-2">${optionsHTML}</div>
+                    </div>
+                    <div id="explanation-box-${index}" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-4 transition-all duration-300 mt-2">
+                        <div class="flex items-center gap-2 mb-2 text-emerald-800 font-bold text-xs uppercase tracking-wider">
+                            <span>✅</span><span>${CURRENT_LANG === 'es' ? 'Deducción Correcta' : 'Deducció Correcta'}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed mb-3">${err.explanation[CURRENT_LANG]}</p>
+                        <div class="bg-white p-3 rounded-lg border border-emerald-200 text-center">
+                            <span class="text-xxs text-emerald-600 font-bold uppercase tracking-wider block">${CURRENT_LANG === 'es' ? 'Compuesto Correcto' : 'Compost Correcte'}</span>
+                            <div class="text-base font-black text-emerald-700 mono mt-0.5">${renderFormula(err.correct)}</div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function checkErrorDiagnostic(errorIndex, optionId, isCorrect) {
+            const errObj = COMMON_ERRORS[errorIndex];
+            errObj.options[CURRENT_LANG].forEach(opt => {
+                const btn = document.getElementById(`btn-error-${errorIndex}-${opt.id}`);
+                const indicator = btn.querySelector('.diagnostic-indicator');
+                btn.className = "w-full text-left p-3 rounded-xl border text-xs font-semibold flex items-center justify-between gap-3 focus:outline-none transition-all duration-150";
+                
+                if (opt.id === optionId) {
+                    if (isCorrect) {
+                        btn.classList.add("bg-emerald-50", "border-emerald-500", "text-emerald-800");
+                        indicator.innerText = "🟢"; indicator.classList.remove('hidden');
+                    } else {
+                        btn.classList.add("bg-rose-50", "border-rose-400", "text-rose-800");
+                        indicator.innerText = "🔴"; indicator.classList.remove('hidden');
+                    }
+                } else {
+                    btn.classList.add("border-slate-200", "text-slate-400", "opacity-60");
+                    indicator.classList.add('hidden');
+                }
+            });
+
+            const explanationBox = document.getElementById(`explanation-box-${errorIndex}`);
+            if (isCorrect) explanationBox.classList.remove('hidden');
+            else explanationBox.classList.add('hidden');
+        }
+
+        // --- GUÍA DE ESTUDIO ---
+        function buildElementsGrid() {
+            const ELEMENTS_DATA = [
+                { sym: "H", val: "+1, -1", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                { sym: "Na", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
+                { sym: "K", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
+                { sym: "Ca", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Mg", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Fe", val: "+2, +3", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Cu", val: "+1, +2", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Al", val: "+3", color: "bg-pink-50 text-pink-700 border-pink-200" },
+                { sym: "O", val: "-2, -1", color: "bg-amber-50 text-amber-700 border-amber-200" },
+                { sym: "F", val: "-1", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                { sym: "Cl", val: "-1, +1, +3, +5, +7", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                { sym: "S", val: "-2, +2, +4, +6", color: "bg-cyan-50 text-cyan-700 border-cyan-200" }
+            ];
+            const grid = document.getElementById('guide-elements-grid');
+            grid.innerHTML = "";
+            ELEMENTS_DATA.forEach(el => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border text-center transition flex flex-col justify-center items-center ${el.color}`;
+                card.innerHTML = `<span class="text-2xl font-black tracking-wider mono">${el.sym}</span><span class="text-xxs font-medium mt-1 uppercase tracking-widest opacity-80">${CURRENT_LANG === 'es' ? 'Oxidación' : 'Oxidació'}</span><span class="text-xs font-bold mt-0.5 mono">${el.val}</span>`;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- SISTEMA DE EXPORTACIÓN A PDF TOTALMENTE SEGURO CON HISTORIAL DETALLADO ---
+        function prepareAndPrintSession() {
+            const studentName = STUDENT_NAME || (CURRENT_LANG === 'es' ? 'Alumno Anónimo' : 'Alumne Anònim');
+            const dateStr = new Date().toLocaleDateString(CURRENT_LANG === 'es' ? 'es-ES' : 'ca-ES', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            const min = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+            const sec = (timerSeconds % 60).toString().padStart(2, '0');
+            const timeStr = `${min}:${sec}`;
+
+            // Renderizar la tabla de historial detallada
+            let historyTableRows = "";
+            if (SESSION_HISTORY.length === 0) {
+                historyTableRows = `<tr><td colspan="4" style="text-align:center; padding: 15px; color: #64748b;">${CURRENT_LANG === 'es' ? 'Aún no se ha respondido ninguna pregunta.' : 'Encara no s\'ha respost cap pregunta.'}</td></tr>`;
+            } else {
+                SESSION_HISTORY.forEach((entry, index) => {
+                    const statusIcon = entry.isCorrect ? "<span style='color: #15803d; font-weight: bold;'>Correcto ✅</span>" : "<span style='color: #b91c1c; font-weight: bold;'>Error ❌</span>";
+                    
+                    let displayPrompt = entry.mode === "name" ? renderFormula(entry.prompt) : entry.prompt;
+                    let displayExpected = entry.mode === "formula" ? renderFormula(entry.expected) : entry.expected;
+                    let displayProvided = entry.mode === "formula" ? renderFormula(entry.provided) : entry.provided;
+
+                    historyTableRows += `
+                        <tr style="border-bottom: 1px solid #e2e8f0; background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                            <td style="padding: 12px; font-family: monospace; font-size: 13px;">${displayPrompt}</td>
+                            <td style="padding: 12px; font-family: monospace; font-size: 13px; color: ${entry.isCorrect ? '#15803d' : '#b91c1c'};">${displayProvided || '<em>(vacío)</em>'}</td>
+                            <td style="padding: 12px; font-family: monospace; font-size: 13px;">${entry.isCorrect ? '-' : displayExpected}</td>
+                            <td style="padding: 12px; font-size: 13px;">${statusIcon}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert(CURRENT_LANG === 'es' 
+                    ? "Por favor, permite las ventanas emergentes en tu navegador para generar el informe en PDF." 
+                    : "Per favor, permet les finestres emergents al teu navegador per a generar l'informe en PDF.");
+                return;
+            }
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Certificado de Formulación - ${studentName}</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            color: #334155;
+                            background: #fff;
+                            margin: 0;
+                            padding: 40px;
+                        }
+                        .certificate {
+                            border: 6px double #4f46e5;
+                            padding: 40px;
+                            max-width: 850px;
+                            margin: 0 auto;
+                        }
+                        h1 {
+                            color: #4f46e5;
+                            text-align: center;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                            margin-bottom: 5px;
+                            font-size: 26px;
+                        }
+                        h2 {
+                            text-align: center;
+                            font-size: 13px;
+                            color: #64748b;
+                            margin-top: 0;
+                            margin-bottom: 40px;
+                            text-transform: uppercase;
+                            letter-spacing: 1px;
+                        }
+                        .meta {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                            font-size: 14px;
+                            border-bottom: 2px solid #f1f5f9;
+                            padding-bottom: 20px;
+                        }
+                        .meta p { margin: 5px 0; }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+                        th {
+                            background-color: #f1f5f9;
+                            text-align: left;
+                            padding: 12px;
+                            border-bottom: 2px solid #cbd5e1;
+                            color: #334155;
+                            font-size: 12px;
+                            text-transform: uppercase;
+                        }
+                        sub {
+                            font-size: 0.75em;
+                            line-height: 0;
+                            position: relative;
+                            vertical-align: baseline;
+                            bottom: -0.25em;
+                        }
+                        .footer {
+                            text-align: center;
+                            margin-top: 50px;
+                            font-size: 11px;
+                            color: #94a3b8;
+                            border-top: 1px solid #f1f5f9;
+                            padding-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="certificate">
+                        <h1>${CURRENT_LANG === 'es' ? 'Certificado de Formulación' : 'Certificat de Formulació'}</h1>
+                        <h2>${CURRENT_LANG === 'es' ? 'Dpto. Física y Química — Elena Ruiz Alfaro' : 'Dpt. Física i Química — Elena Ruiz Alfaro'}</h2>
+                        
+                        <div class="meta">
+                            <div>
+                                <p><strong>${CURRENT_LANG === 'es' ? 'Alumno/a:' : 'Alumne/a:'}</strong> ${studentName}</p>
+                                <p><strong>${CURRENT_LANG === 'es' ? 'Fecha:' : 'Data:'}</strong> ${dateStr}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p><strong>${CURRENT_LANG === 'es' ? 'Aciertos Totales:' : 'Encerts Totals:'}</strong> ${TOTAL_CORRECT}</p>
+                                <p><strong>${CURRENT_LANG === 'es' ? 'Récord de Racha:' : 'Rècord de Ratxa:'}</strong> ${MAX_SCORE}</p>
+                                <p><strong>${CURRENT_LANG === 'es' ? 'Tiempo invertido:' : 'Temps invertit:'}</strong> ${timeStr}</p>
+                            </div>
+                        </div>
+
+                        <h3 style="color: #475569; font-size: 16px;">${CURRENT_LANG === 'es' ? 'Registro Detallado de Sesión' : 'Registre Detallat de Sessió'}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>${CURRENT_LANG === 'es' ? 'Pregunta' : 'Pregunta'}</th>
+                                    <th>${CURRENT_LANG === 'es' ? 'Respuesta del Alumno' : 'Resposta de l\'Alumne'}</th>
+                                    <th>${CURRENT_LANG === 'es' ? 'Respuesta Correcta' : 'Resposta Correcta'}</th>
+                                    <th>${CURRENT_LANG === 'es' ? 'Resultado' : 'Resultat'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${historyTableRows}
+                            </tbody>
+                        </table>
+
+                        <div class="footer">
+                            <p>${CURRENT_LANG === 'es' ? 'Este documento de autoevaluación sigue el currículo oficial de 1º de Bachillerato del IEDIB y de la UIB' : 'Aquest document d\'autoavaluació segueix el currículum oficial de 1r de Batxillerat de l\'IEDIB i de la UIB'}</p>
+                            <p><strong>Física y Química — IEDIB</strong></p>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    </script>
+</body>
+</html>
