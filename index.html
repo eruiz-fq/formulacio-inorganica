@@ -1914,20 +1914,68 @@
         }
 
         function buildElementsGrid() {
+            // Tabla completa de estados de oxidación según Figura 2 (Seminari de Química, UIB)
             const ELEMENTS_DATA = [
+                // Grupo 1: Alcalinos e Hidrógeno
                 { sym: "H", val: "+1, -1", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                { sym: "Li", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
                 { sym: "Na", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
                 { sym: "K", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
-                { sym: "Ca", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Rb", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
+                { sym: "Cs", val: "+1", color: "bg-blue-50 text-blue-700 border-blue-200" },
+
+                // Grupo 2: Alcalinotérreos
+                { sym: "Be", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
                 { sym: "Mg", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Ca", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Sr", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                { sym: "Ba", val: "+2", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+
+                // Metales de Transición
+                { sym: "Cr", val: "+2, +3, +6", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Mn", val: "+2, +3, +4, +6, +7", color: "bg-purple-50 text-purple-700 border-purple-200" },
                 { sym: "Fe", val: "+2, +3", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Co", val: "+2, +3", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Ni", val: "+2, +3", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Pd", val: "+2, +4", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Pt", val: "+2, +4", color: "bg-purple-50 text-purple-700 border-purple-200" },
                 { sym: "Cu", val: "+1, +2", color: "bg-purple-50 text-purple-700 border-purple-200" },
-                { sym: "Al", val: "+3", color: "bg-pink-50 text-pink-700 border-pink-200" },
-                { sym: "O", val: "-2, -1", color: "bg-amber-50 text-amber-700 border-amber-200" },
+                { sym: "Ag", val: "+1", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Au", val: "+1, +3", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Zn", val: "+2", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Cd", val: "+2", color: "bg-purple-50 text-purple-700 border-purple-200" },
+                { sym: "Hg", val: "+1, +2", color: "bg-purple-50 text-purple-700 border-purple-200" },
+
+                // Grupo 13: Térreos
+                { sym: "B", val: "+3, -3", color: "bg-amber-50 text-amber-700 border-amber-200" },
+                { sym: "Al", val: "+3", color: "bg-amber-50 text-amber-700 border-amber-200" },
+
+                // Grupo 14: Carbonoideos
+                { sym: "C", val: "+2, +4, -4", color: "bg-orange-50 text-orange-700 border-orange-200" },
+                { sym: "Si", val: "+4, -4", color: "bg-orange-50 text-orange-700 border-orange-200" },
+                { sym: "Sn", val: "+2, +4", color: "bg-orange-50 text-orange-700 border-orange-200" },
+                { sym: "Pb", val: "+2, +4", color: "bg-orange-50 text-orange-700 border-orange-200" },
+
+                // Grupo 15: Nitrogenoideos
+                { sym: "N", val: "+1, +2, +3, +4, +5, -3", color: "bg-teal-50 text-teal-700 border-teal-200" },
+                { sym: "P", val: "+3, +5, -3", color: "bg-teal-50 text-teal-700 border-teal-200" },
+                { sym: "As", val: "+3, +5, -3", color: "bg-teal-50 text-teal-700 border-teal-200" },
+                { sym: "Sb", val: "+3, +5, -3", color: "bg-teal-50 text-teal-700 border-teal-200" },
+                { sym: "Bi", val: "+3, +5", color: "bg-teal-50 text-teal-700 border-teal-200" },
+
+                // Grupo 16: Anfígenos
+                { sym: "O", val: "-2, -1", color: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+                { sym: "S", val: "+2, +4, +6, -2", color: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+                { sym: "Se", val: "+2, +4, +6, -2", color: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+                { sym: "Te", val: "+2, +4, +6, -2", color: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+
+                // Grupo 17: Halógenos
                 { sym: "F", val: "-1", color: "bg-rose-50 text-rose-700 border-rose-200" },
-                { sym: "Cl", val: "-1, +1, +3, +5, +7", color: "bg-rose-50 text-rose-700 border-rose-200" },
-                { sym: "S", val: "-2, +2, +4, +6", color: "bg-cyan-50 text-cyan-700 border-cyan-200" }
+                { sym: "Cl", val: "+1, +3, +5, +7, -1", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                { sym: "Br", val: "+1, +3, +5, +7, -1", color: "bg-rose-50 text-rose-700 border-rose-200" },
+                { sym: "I", val: "+1, +3, +5, +7, -1", color: "bg-rose-50 text-rose-700 border-rose-200" }
             ];
+
             const grid = document.getElementById('guide-elements-grid');
             grid.innerHTML = "";
             ELEMENTS_DATA.forEach(el => {
