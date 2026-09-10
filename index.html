@@ -303,6 +303,39 @@
                 </div>
             </div>
 
+            <!-- TABLA COMPLETA DE IONES DE REFERENCIA UIB / IUPAC 2005 -->
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div class="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <span>⚛️</span> <span id="guide-ions-title">Iones de Referencia UIB / IUPAC 2005</span>
+                        </h2>
+                        <p class="text-slate-500 text-xs mt-1" id="guide-ions-desc">Cationes y aniones homoatómicos, heteropoliatómicos y oxoaniones de la guía oficial del Seminari de Química (UIB).</p>
+                    </div>
+                    <div class="flex gap-1.5 text-xs">
+                        <button onclick="filterIonsTable('all')" id="btn-ion-all" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Todos</button>
+                        <button onclick="filterIonsTable('cation')" id="btn-ion-cation" class="px-3 py-1.5 rounded-lg font-semibold text-slate-500 hover:text-slate-800 bg-slate-100">Cationes</button>
+                        <button onclick="filterIonsTable('anion')" id="btn-ion-anion" class="px-3 py-1.5 rounded-lg font-semibold text-slate-500 hover:text-slate-800 bg-slate-100">Aniones</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-slate-500 uppercase font-bold text-[10px] bg-slate-50/70">
+                                <th class="py-2.5 px-3">Fórmula / Ión</th>
+                                <th class="py-2.5 px-3">Tipo</th>
+                                <th class="py-2.5 px-3" id="th-ion-col1">Nombre Sistemático / Carga / Sustitución</th>
+                                <th class="py-2.5 px-3" id="th-ion-col2">Nombre Tradicional / Aceptado IUPAC</th>
+                            </tr>
+                        </thead>
+                        <tbody id="guide-ions-table-body" class="divide-y divide-slate-100">
+                            <!-- Generado dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Resumen de Reglas IUPAC 2005 -->
             <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
                 <h2 class="text-xl font-bold text-slate-900 border-b border-slate-200 pb-3" id="guide-rules-title">Resumen de Reglas de Formulación</h2>
@@ -323,6 +356,26 @@
                             Para compuestos iónicos puedes utilizar números de oxidación (Stock, ej: <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">hierro(III)</code>) o prefijos multiplicadores (Sistemática, ej: <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">di-</code>, <code class="text-slate-800 bg-slate-100 px-1 py-0.5 rounded">tri-</code>). ¡Nunca mezclas ambos sistemas!
                         </p>
                     </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-lg font-bold text-emerald-600 flex items-center gap-2"><span>💧</span> <span>Nomenclatures en Oxoàcids (UIB)</span></h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            <strong>D'addició:</strong> considera lligands (hidròxid per a OH àcid, òxid per a =O) units a l'àtom central.<br>
+                            Ex: <code class="bg-slate-100 px-1 py-0.5 rounded">H₂SO₄</code> &rarr; <em>dihidroxidodioxidazufre</em> / <em>dihidroxidodioxidsofre</em>.<br>
+                            <strong>D'hidrogen:</strong> prefix-hidrogen(prefix-oxid-element-at).<br>
+                            Ex: <code class="bg-slate-100 px-1 py-0.5 rounded">H₂SO₄</code> &rarr; <em>dihidrógeno(tetraoxidosulfato)</em> / <em>dihidrogen(tetraoxidsulfat)</em>.
+                        </p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="text-lg font-bold text-amber-600 flex items-center gap-2"><span>🧂</span> <span>Nomenclatures en Oxosals (UIB)</span></h3>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            <strong>De composició:</strong> anió estequiomètric + de + catió.<br>
+                            Ex: <code class="bg-slate-100 px-1 py-0.5 rounded">Fe₂(SO₄)₃</code> &rarr; <em>tris(tetraoxidosulfato) de dihierro</em>.<br>
+                            <strong>D'addició:</strong> anió amb càrrega + catió amb càrrega.<br>
+                            Ex: <code class="bg-slate-100 px-1 py-0.5 rounded">Fe₂(SO₄)₃</code> &rarr; <em>tetraoxidosulfato(2-) de hierro(3+)</em> / <em>tetraoxidsulfat(2-) de ferro(3+)</em>.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -336,7 +389,6 @@
 
     <!-- LOGICA DEL JUEGO / DATA BASE -->
     <script>
-        // --- CATEGORÍAS (GLOBAL) ---
         const CATEGORIES = {
             all: { es: "Todos los niveles", ca: "Tots els nivells" },
             binarios: { es: "Compuestos Binarios", ca: "Compostos Binaris" },
@@ -344,43 +396,44 @@
             cuaternarios: { es: "Compuestos Cuaternarios", ca: "Compostos Quaternaris" }
         };
 
-        // --- BASE DE DATOS MASIVA (CURRÍCULO UIB IUPAC 2005 COMPLETO) ---
         const DATABASE = [
             // --- HIDRÁCIDOS ---
-            { id: "bin_hyd_gas1", category: "binarios", formula: "HCl (g)", names: { es: ["cloruro de hidrógeno"], ca: ["clorur d'hidrogen"] }, tip: { es: "En estado gaseoso (g), los hidrácidos son haluros de hidrógeno y se nombran con el sufijo '-uro de hidrógeno'.", ca: "En estat gasós (g), els hidràcids són halurs d'hidrogen." } },
-            { id: "bin_hyd_aq1", category: "binarios", formula: "HCl (aq)", names: { es: ["ácido clorhídrico"], ca: ["àcid clorhídric"] }, tip: { es: "En disolución acuosa (aq), el haluro de hidrógeno se comporta como ácido y se nombra como 'ácido ...-hídrico'.", ca: "En dissolució aquosa (aq), es nomena com a 'àcid ...-hídric'." } },
-            { id: "bin_hyd_gas2", category: "binarios", formula: "H2S (g)", names: { es: ["sulfuro de hidrógeno"], ca: ["sulfur d'hidrogen"] }, tip: { es: "En estado gaseoso (g), el H₂S se nombra como 'sulfuro de hidrógeno'. Observa el subíndice 2 debido al azufre (-2).", ca: "En estat gasós (g), s'anomena 'sulfur d'hidrogen'." } },
-            { id: "bin_hyd_aq2", category: "binarios", formula: "H2S (aq)", names: { es: ["ácido sulfhídrico"], ca: ["àcid sulfhídric"] }, tip: { es: "En disolución acuosa (aq), adquiere carácter ácido.", ca: "En dissolució aquosa (aq), adquireix caràcter àcid." } },
-            { id: "bin_hyd_gas3", category: "binarios", formula: "HF (g)", names: { es: ["fluoruro de hidrógeno"], ca: ["fluorur d'hidrogen"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
-            { id: "bin_hyd_aq3", category: "binarios", formula: "HF (aq)", names: { es: ["ácido fluorhídrico"], ca: ["àcid fluorhídric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
-            { id: "bin_hyd_gas4", category: "binarios", formula: "HBr (g)", names: { es: ["bromuro de hidrógeno"], ca: ["bromur d'hidrogen"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
-            { id: "bin_hyd_aq4", category: "binarios", formula: "HBr (aq)", names: { es: ["ácido bromhídrico"], ca: ["àcid bromhídric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
+            { id: "bin_hyd_gas1", category: "binarios", formula: "HCl (g)", names: { es: ["cloruro de hidrógeno", "cloruro de hidrogeno", "clorano"], ca: ["clorur d'hidrogen", "clora"] }, tip: { es: "En estado gaseoso (g), los hidrácidos son haluros de hidrógeno y se nombran con el sufijo '-uro de hidrógeno'.", ca: "En estat gasós (g), els hidràcids són halurs d'hidrogen." } },
+            { id: "bin_hyd_aq1", category: "binarios", formula: "HCl (aq)", names: { es: ["ácido clorhídrico", "acido clorhidrico"], ca: ["àcid clorhídric", "acid clorhidric"] }, tip: { es: "En disolución acuosa (aq), el haluro de hidrógeno se comporta como ácido y se nombra como 'ácido ...-hídrico'.", ca: "En dissolució aquosa (aq), es nomena com a 'àcid ...-hídric'." } },
+            { id: "bin_hyd_gas2", category: "binarios", formula: "H2S (g)", names: { es: ["sulfuro de hidrógeno", "sulfuro de hidrogeno", "sulfuro de dihidrógeno", "sulfano"], ca: ["sulfur d'hidrogen", "sulfur de dihidrogen", "sulfa"] }, tip: { es: "En estado gaseoso (g), el H₂S se nombra como 'sulfuro de hidrógeno'. Observa el subíndice 2 debido al azufre (-2).", ca: "En estat gasós (g), s'anomena 'sulfur d'hidrogen'." } },
+            { id: "bin_hyd_aq2", category: "binarios", formula: "H2S (aq)", names: { es: ["ácido sulfhídrico", "acido sulfhidrico"], ca: ["àcid sulfhídric", "acid sulfhidric"] }, tip: { es: "En disolución acuosa (aq), adquiere carácter ácido.", ca: "En dissolució aquosa (aq), adquireix caràcter àcid." } },
+            { id: "bin_hyd_gas3", category: "binarios", formula: "HF (g)", names: { es: ["fluoruro de hidrógeno", "fluoruro de hidrogeno", "fluorano"], ca: ["fluorur d'hidrogen", "fluora"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
+            { id: "bin_hyd_aq3", category: "binarios", formula: "HF (aq)", names: { es: ["ácido fluorhídrico", "acido fluorhidrico"], ca: ["àcid fluorhídric", "acid fluorhidric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
+            { id: "bin_hyd_gas4", category: "binarios", formula: "HBr (g)", names: { es: ["bromuro de hidrógeno", "bromuro de hidrogeno", "bromano"], ca: ["bromur d'hidrogen", "broma"] }, tip: { es: "Fase gaseosa.", ca: "Fase gasosa." } },
+            { id: "bin_hyd_aq4", category: "binarios", formula: "HBr (aq)", names: { es: ["ácido bromhídrico", "acido bromhidrico"], ca: ["àcid bromhídric", "acid bromhidric"] }, tip: { es: "Fase acuosa.", ca: "Fase aquosa." } },
+            { id: "bin_hyd_gas5", category: "binarios", formula: "HI (g)", names: { es: ["yoduro de hidrógeno", "ioduro de hidrogeno", "yodano"], ca: ["iodur d'hidrogen", "ioda"] }, tip: { es: "Fase gaseosa del yoduro de hidrógeno.", ca: "Fase gasosa de l'iodur d'hidrogen." } },
+            { id: "bin_hyd_aq5", category: "binarios", formula: "HI (aq)", names: { es: ["ácido yodhídrico", "acido yodhidrico", "ácido iodhídrico"], ca: ["àcid iodhídric", "acid iodhidric"] }, tip: { es: "Fase acuosa del yoduro de hidrógeno.", ca: "Fase aquosa de l'iodur d'hidrogen." } },
             
             // --- BINARIOS: ÓXIDOS ---
-            { id: "bin_ox1", category: "binarios", formula: "Fe2O3", names: { es: ["óxido de hierro(III)", "trióxido de dihierro"], ca: ["òxid de ferro(III)", "triòxid de diferro"] }, tip: { es: "Binario: El hierro actúa con +3 y el oxígeno con -2. No se simplifican al cruzar.", ca: "El ferro actua amb +3 i l'oxigen amb -2." } },
+            { id: "bin_ox1", category: "binarios", formula: "Fe2O3", names: { es: ["óxido de hierro(III)", "trióxido de dihierro", "oxido de hierro(3+)"], ca: ["òxid de ferro(III)", "triòxid de diferro", "oxid de ferro(3+)"] }, tip: { es: "Binario: El hierro actúa con +3 y el oxígeno con -2. No se simplifican al cruzar.", ca: "El ferro actua amb +3 i l'oxigen amb -2." } },
             { id: "bin_ox2", category: "binarios", formula: "CaO", names: { es: ["óxido de calcio", "monóxido de calcio"], ca: ["òxid de calci", "monòxid de calci"] }, tip: { es: "Binario: Las cargas Ca(+2) y O(-2) se cruzan y se simplifican obligatoriamente a CaO.", ca: "Càrregues Ca(+2) i O(-2) es creuen i se simplifiquen." } },
             { id: "bin_ox3", category: "binarios", formula: "CO2", names: { es: ["dióxido de carbono", "óxido de carbono(IV)"], ca: ["diòxid de carboni", "òxid de carboni(IV)"] }, tip: { es: "Binario: El carbono actúa con +4 y el oxígeno con -2. Se cruza (C2O4) y se simplifica a CO2.", ca: "El carboni actua amb +4 i l'oxigen amb -2. S'obté C2O4 i se simplifica." } },
-            { id: "bin_ox4", category: "binarios", formula: "SO3", names: { es: ["trióxido de azufre", "óxido de azufre(VI)"], ca: ["triòxid de sofre", "òxid de sofre(VI)"] }, tip: { es: "Binario: Azufre (+6) y Oxígeno (-2) se cruzan a S2O6 y simplifican a SO3.", ca: "Sofre (+6) i Oxigen (-2) es creuen a S2O6 i simplifiquen." } },
-            { id: "bin_ox5", category: "binarios", formula: "PbO2", names: { es: ["dióxido de plomo", "óxido de plomo(IV)"], ca: ["diòxid de plom", "òxid de plom(IV)"] }, tip: { es: "Binario: Plomo (+4) y Oxígeno (-2) simplifican a PbO2.", ca: "Plom (+4) i Oxigen (-2) simplifiquen a PbO2." } },
-            { id: "bin_ox6", category: "binarios", formula: "CuO", names: { es: ["óxido de cobre(II)", "monóxido de cobre"], ca: ["òxid de coure(II)", "monòxid de coure"] }, tip: { es: "Cobre (+2) y Oxígeno (-2) simplifican a CuO.", ca: "Coure (+2) i Oxigen (-2) simplifiquen." } },
+            { id: "bin_ox4", category: "binarios", formula: "SO3", names: { es: ["trióxido de azufre", "óxido de azufre(VI)"], ca: ["triòxid de sofre", "òxid de sofre(VI)", "triòxid de xofre"] }, tip: { es: "Binario: Azufre (+6) y Oxígeno (-2) se cruzan a S2O6 y simplifican a SO3.", ca: "Sofre (+6) i Oxigen (-2) es creuen a S2O6 i simplifiquen." } },
+            { id: "bin_ox5", category: "binarios", formula: "PbO2", names: { es: ["dióxido de plomo", "óxido de plomo(IV)", "óxido de plomo(4+)"], ca: ["diòxid de plom", "òxid de plom(IV)", "òxid de plom(4+)"] }, tip: { es: "Binario: Plomo (+4) y Oxígeno (-2) simplifican a PbO2.", ca: "Plom (+4) i Oxigen (-2) simplifiquen a PbO2." } },
+            { id: "bin_ox6", category: "binarios", formula: "CuO", names: { es: ["óxido de cobre(II)", "monóxido de cobre", "óxido de cobre(2+)"], ca: ["òxid de coure(II)", "monòxid de coure", "òxid de coure(2+)"] }, tip: { es: "Cobre (+2) y Oxígeno (-2) simplifican a CuO.", ca: "Coure (+2) i Oxigen (-2) simplifiquen." } },
             { id: "bin_ox7", category: "binarios", formula: "Al2O3", names: { es: ["óxido de aluminio", "trióxido de dialuminio"], ca: ["òxid d'alumini", "triòxid de dialumini"] }, tip: { es: "El aluminio tiene valencia única +3, no requiere números romanos.", ca: "L'alumini té valència única +3." } },
             { id: "bin_ox8", category: "binarios", formula: "N2O5", names: { es: ["pentaóxido de dinitrógeno", "óxido de nitrógeno(V)"], ca: ["pentaòxid de dinitrogen", "òxid de nitrogen(V)"] }, tip: { es: "El nitrógeno actúa con +5 y el oxígeno con -2.", ca: "El nitrogen actua amb +5." } },
 
             // --- BINARIOS: PERÓXIDOS ---
             { id: "bin_perox1", category: "binarios", formula: "H2O2", names: { es: ["peróxido de hidrógeno", "dióxido de dihidrógeno", "agua oxigenada"], ca: ["peròxid d'hidrogen", "diòxid de dihidrogen", "aigua oxigenada"] }, tip: { es: "El grupo peróxido es (O2) con carga -2. No se simplifican los subíndices de la estructura peróxido.", ca: "El grup peròxid és (O2) amb càrrega -2. No se simplifiquen." } },
-            { id: "bin_perox2", category: "binarios", formula: "Na2O2", names: { es: ["peróxido de sodio", "dióxido de disodio"], ca: ["peròxid de sodi", "diòxid de disodi"] }, tip: { es: "Unión de Na(+1) con el grupo peróxido O2(-2).", ca: "Unió de Na(+1) amb el grup peròxid O2(-2)." } },
+            { id: "bin_perox2", category: "binarios", formula: "Na2O2", names: { es: ["peróxido de sodio", "dióxido de disodio", "dióxido(2-) de sodio"], ca: ["peròxid de sodi", "diòxid de disodi", "diòxid(2-) de sodi"] }, tip: { es: "Unión de Na(+1) con el grupo peróxido O2(-2).", ca: "Unió de Na(+1) amb el grup peròxid O2(-2)." } },
             { id: "bin_perox3", category: "binarios", formula: "BaO2", names: { es: ["peróxido de bario", "dióxido de bario"], ca: ["peròxid de bari", "diòxid de bari"] }, tip: { es: "Bario (+2) y grupo peróxido O2(-2) simplifican la parte externa a Ba1(O2)1 -> BaO2.", ca: "Bari (+2) i grup peròxid O2(-2)." } },
 
             // --- BINARIOS: HALUROS DE OXÍGENO (IUPAC 2005) ---
-            { id: "bin_hal1", category: "binarios", formula: "OCl2", names: { es: ["dicloruro de oxígeno"], ca: ["diclorur d'oxigen"] }, tip: { es: "IUPAC 2005: El oxígeno es más electropositivo que el cloro, se escribe a la izquierda y se nombra haluro de oxígeno.", ca: "L'oxigen s'escriu a l'esquerra." } },
-            { id: "bin_hal2", category: "binarios", formula: "OF2", names: { es: ["difluoruro de oxígeno"], ca: ["difluorur d'oxigen"] }, tip: { es: "IUPAC 2005: El flúor es el único elemento más electronegativo que el oxígeno; por eso el flúor va a la derecha.", ca: "El fluor és l'únic element més electronegatiu que l'oxigen." } },
-            { id: "bin_hal3", category: "binarios", formula: "O5Cl2", names: { es: ["dicloruro de pentaoxígeno"], ca: ["diclorur de pentaoxigen"] }, tip: { es: "IUPAC 2005: Haluro de oxígeno donde el oxígeno aporta 5 átomos.", ca: "Halur d'oxigen amb prefix penta- a l'oxigen." } },
-            { id: "bin_hal4", category: "binarios", formula: "O7I2", names: { es: ["diyoduro de heptaoxígeno"], ca: ["diiodur d'heptaoxigen"] }, tip: { es: "IUPAC 2005: Combinación de yodo y oxígeno.", ca: "Combinació de iode i oxigen." } },
+            { id: "bin_hal1", category: "binarios", formula: "OCl2", names: { es: ["dicloruro de oxígeno", "dicloruro de oxigeno"], ca: ["diclorur d'oxigen"] }, tip: { es: "IUPAC 2005: El oxígeno es más electropositivo que el cloro, se escribe a la izquierda y se nombra haluro de oxígeno.", ca: "L'oxigen s'escriu a l'esquerra." } },
+            { id: "bin_hal2", category: "binarios", formula: "OF2", names: { es: ["difluoruro de oxígeno", "difluoruro de oxigeno"], ca: ["difluorur d'oxigen"] }, tip: { es: "IUPAC 2005: El flúor es el único elemento más electronegativo que el oxígeno; por eso el flúor va a la derecha.", ca: "El fluor és l'únic element més electronegatiu que l'oxigen." } },
+            { id: "bin_hal3", category: "binarios", formula: "O5Cl2", names: { es: ["dicloruro de pentaoxígeno", "dicloruro de pentaoxigeno"], ca: ["diclorur de pentaoxigen"] }, tip: { es: "IUPAC 2005: Haluro de oxígeno donde el oxígeno aporta 5 átomos.", ca: "Halur d'oxigen amb prefix penta- a l'oxigen." } },
+            { id: "bin_hal4", category: "binarios", formula: "O7I2", names: { es: ["diyoduro de heptaoxígeno", "diioduro de heptaoxigeno"], ca: ["diiodur d'heptaoxigen"] }, tip: { es: "IUPAC 2005: Combinación de yodo y oxígeno.", ca: "Combinació de iode i oxigen." } },
 
             // --- BINARIOS: HIDRUROS METÁLICOS Y NO METÁLICOS ---
             { id: "bin_hyd1", category: "binarios", formula: "NaH", names: { es: ["hidruro de sodio"], ca: ["hidrur de sodi"] }, tip: { es: "Binario: Hidruro metálico. El hidrógeno actúa con -1.", ca: "Hidrur metàl·lic. L'hidrogen actua amb -1." } },
             { id: "bin_hyd2", category: "binarios", formula: "CaH2", names: { es: ["hidruro de calcio", "dihidruro de calcio"], ca: ["hidrur de calci", "dihidrur de calci"] }, tip: { es: "Calcio actúa con valencia +2 y el hidrógeno con -1.", ca: "Calci actua amb +2." } },
-            { id: "bin_hyd3", category: "binarios", formula: "AlH3", names: { es: ["hidruro de aluminio", "trihidruro de aluminio"], ca: ["hidrur d'alumini", "trihidrur d'alumini"] }, tip: { es: "Aluminio actúa con +3.", ca: "Alumini actua amb +3." } },
+            { id: "bin_hyd3", category: "binarios", formula: "AlH3", names: { es: ["hidruro de aluminio", "trihidruro de aluminio", "alumano"], ca: ["hidrur d'alumini", "trihidrur d'alumini", "aluma"] }, tip: { es: "Aluminio actúa con +3.", ca: "Alumini actua amb +3." } },
             { id: "bin_hyd4", category: "binarios", formula: "NH3", names: { es: ["amoníaco", "amoniaco", "azano", "trihidruro de nitrógeno"], ca: ["amoníac", "azà", "trihidrur de nitrogen"] }, tip: { es: "Nombre común 'amoníaco' aceptado universalmente por la IUPAC.", ca: "El nom comú 'amoníac' està acceptat per la IUPAC." } },
             { id: "bin_hyd5", category: "binarios", formula: "PH3", names: { es: ["fosfano", "trihidruro de fósforo"], ca: ["fosfà", "trihidrur de fòsfor"] }, tip: { es: "Nomenclatura de sustitución: la raíz 'fosf' más la terminación '-ano'.", ca: "S'afegeix la terminació '-à' a l'arrel 'fosf'." } },
             { id: "bin_hyd6", category: "binarios", formula: "AsH3", names: { es: ["arsano", "trihidruro de arsénico"], ca: ["arsà", "trihidrur d'arsènic"] }, tip: { es: "Hidruro covalente de arsénico.", ca: "Hidrur covalent d'arsènic." } },
@@ -390,54 +443,615 @@
 
             // --- BINARIOS: SALES BINARIAS ---
             { id: "bin_sal1", category: "binarios", formula: "NaCl", names: { es: ["cloruro de sodio"], ca: ["clorur de sodi"] }, tip: { es: "Sal común. Sodio (+1) y Cloro (-1).", ca: "Sal comuna. Sodi (+1) i Clor (-1)." } },
-            { id: "bin_sal2", category: "binarios", formula: "FeCl3", names: { es: ["cloruro de hierro(III)", "tricloruro de hierro"], ca: ["clorur de ferro(III)", "triclorur de ferro"] }, tip: { es: "Sal binaria. El hierro actúa con +3 y el cloro con -1.", ca: "El ferro actua amb +3." } },
+            { id: "bin_sal2", category: "binarios", formula: "FeCl3", names: { es: ["cloruro de hierro(III)", "tricloruro de hierro", "cloruro de hierro(3+)"], ca: ["clorur de ferro(III)", "triclorur de ferro", "clorur de ferro(3+)"] }, tip: { es: "Sal binaria. El hierro actúa con +3 y el cloro con -1.", ca: "El ferro actua amb +3." } },
             { id: "bin_sal3", category: "binarios", formula: "Ag2S", names: { es: ["sulfuro de plata", "monosulfuro de diplata"], ca: ["sulfur de plata", "monosulfur de diplata"] }, tip: { es: "La plata solo tiene valencia +1, por lo que no se indica en números romanos.", ca: "La plata només té valència +1." } },
             { id: "bin_sal4", category: "binarios", formula: "CaF2", names: { es: ["fluoruro de calcio", "difluoruro de calcio"], ca: ["fluorur de calci", "difluorur de calci"] }, tip: { es: "Calcio (+2) y flúor (-1).", ca: "Calci (+2) i fluor (-1)." } },
-            { id: "bin_sal5", category: "binarios", formula: "PbI2", names: { es: ["yoduro de plomo(II)", "diyoduro de plomo"], ca: ["iodur de plom(II)", "diiodur de plom"] }, tip: { es: "Plomo actuando con +2.", ca: "Plom actuant amb +2." } },
-            { id: "bin_sal6", category: "binarios", formula: "CuBr2", names: { es: ["bromuro de cobre(II)", "dibromuro de cobre"], ca: ["bromur de coure(II)", "dibromur de coure"] }, tip: { es: "Cobre actuando con +2.", ca: "Coure actuant amb +2." } },
+            { id: "bin_sal5", category: "binarios", formula: "PbI2", names: { es: ["yoduro de plomo(II)", "diyoduro de plomo", "yoduro de plomo(2+)"], ca: ["iodur de plom(II)", "diiodur de plom", "iodur de plom(2+)"] }, tip: { es: "Plomo actuando con +2.", ca: "Plom actuant amb +2." } },
+            { id: "bin_sal6", category: "binarios", formula: "CuBr2", names: { es: ["bromuro de cobre(II)", "dibromuro de cobre", "bromuro de cobre(2+)"], ca: ["bromur de coure(II)", "dibromur de coure", "bromur de coure(2+)"] }, tip: { es: "Cobre actuando con +2.", ca: "Coure actuant amb +2." } },
 
             // --- TERNARIOS: HIDRÓXIDOS ---
             { id: "ter_hydrox1", category: "ternarios", formula: "Ca(OH)2", names: { es: ["hidróxido de calcio", "dihidróxido de calcio"], ca: ["hidròxid de calci", "dihidròxid de calci"] }, tip: { es: "Los hidróxidos contienen el grupo poliatómico (OH) con carga -1.", ca: "Contenen el grup (OH) amb càrrega -1." } },
             { id: "ter_hydrox2", category: "ternarios", formula: "Al(OH)3", names: { es: ["hidróxido de aluminio", "trihidróxido de aluminio"], ca: ["hidròxid d'alumini", "trihidròxid d'alumini"] }, tip: { es: "Al no tener más valencias, en Stock no requiere número romano.", ca: "En no tenir més valències, a Stock no cal nombre romà." } },
             { id: "ter_hydrox3", category: "ternarios", formula: "KOH", names: { es: ["hidróxido de potasio"], ca: ["hidròxid de potassi"] }, tip: { es: "Al cruzar cargas +1 y -1, no se ponen paréntesis alrededor del grupo OH.", ca: "No es posen parèntesis en càrregues 1:1." } },
-            { id: "ter_hydrox4", category: "ternarios", formula: "Fe(OH)3", names: { es: ["hidróxido de hierro(III)", "trihidróxido de hierro"], ca: ["hidròxid de ferro(III)", "trihidròxid de ferro"] }, tip: { es: "Hierro actuando con la mayor valencia.", ca: "Ferro actuant amb la major valència." } },
+            { id: "ter_hydrox4", category: "ternarios", formula: "Fe(OH)3", names: { es: ["hidróxido de hierro(III)", "trihidróxido de hierro", "hidróxido de hierro(3+)"], ca: ["hidròxid de ferro(III)", "trihidròxid de ferro", "hidròxid de ferro(3+)"] }, tip: { es: "Hierro actuando con la mayor valencia.", ca: "Ferro actuant amb la major valència." } },
             { id: "ter_hydrox5", category: "ternarios", formula: "NaOH", names: { es: ["hidróxido de sodio"], ca: ["hidròxid de sodi"] }, tip: { es: "Sosa cáustica. Base muy fuerte.", ca: "Sosa càustica. Base molt forta." } },
 
-            // --- TERNARIOS: OXOÁCIDOS (COMPLETOS) ---
-            { id: "ter_acid1", category: "ternarios", formula: "H2SO4", names: { es: ["ácido sulfúrico", "tetraoxidosulfato de dihidrógeno"], ca: ["àcid sulfúric", "tetraoxidosulfat de dihidrogen"] }, tip: { es: "Oxoácido de azufre con estado de oxidación +6.", ca: "Oxoàcid de sofre amb estat d'oxidació +6." } },
-            { id: "ter_acid2", category: "ternarios", formula: "H2SO3", names: { es: ["ácido sulfuroso", "trioxidosulfato de dihidrógeno"], ca: ["àcid sulfurós", "trioxidosulfat de dihidrogen"] }, tip: { es: "Azufre con estado de oxidación +4 (terminación -oso).", ca: "Sofre amb estat d'oxidació +4." } },
-            { id: "ter_acid3", category: "ternarios", formula: "HNO3", names: { es: ["ácido nítrico", "trioxidonitrato de hidrógeno"], ca: ["àcid nítric", "trioxidonitrat d'hidrogen"] }, tip: { es: "Nitrógeno actúa con su máximo estado de oxidación de +5.", ca: "Nitrogen actua amb estat d'oxidació +5." } },
-            { id: "ter_acid4", category: "ternarios", formula: "HNO2", names: { es: ["ácido nitroso", "dioxidonitrato de hidrógeno"], ca: ["àcid nitrós", "dioxidonitrat d'hidrogen"] }, tip: { es: "Nitrógeno con +3.", ca: "Nitrogen amb +3." } },
-            { id: "ter_acid5", category: "ternarios", formula: "HClO4", names: { es: ["ácido perclórico", "tetraoxidoclorato de hidrógeno"], ca: ["àcid perclòric", "tetraoxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +7 (per- y -ico).", ca: "Clor amb +7." } },
-            { id: "ter_acid6", category: "ternarios", formula: "HClO3", names: { es: ["ácido clórico", "trioxidoclorato de hidrógeno"], ca: ["àcid clòric", "trioxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +5 (-ico).", ca: "Clor amb +5." } },
-            { id: "ter_acid7", category: "ternarios", formula: "HClO2", names: { es: ["ácido cloroso", "dioxidoclorato de hidrógeno"], ca: ["àcid clorós", "dioxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +3 (-oso).", ca: "Clor amb +3." } },
-            { id: "ter_acid8", category: "ternarios", formula: "HClO", names: { es: ["ácido hipocloroso", "monoxidoclorato de hidrógeno"], ca: ["àcid hipoclorós", "monoxidoclorat d'hidrogen"] }, tip: { es: "Cloro con +1 (hipo- y -oso).", ca: "Clor amb +1." } },
-            { id: "ter_acid9", category: "ternarios", formula: "H3PO4", names: { es: ["ácido fosfórico", "ácido ortofosfórico", "tetraoxidofosfato de trihidrógeno"], ca: ["àcid fosfòric", "àcid ortofosfòric", "tetraoxidofosfat de trihidrogen"] }, tip: { es: "Fosfórico común es la forma orto- (3 moléculas de H2O teóricas).", ca: "Forma orto- per defecte." } },
-            { id: "ter_acid10", category: "ternarios", formula: "H2CO3", names: { es: ["ácido carbónico", "trioxidocarbonato de dihidrógeno"], ca: ["àcid carbònic", "trioxidocarbonat de dihidrogen"] }, tip: { es: "Único oxoácido común del carbono (+4).", ca: "Únic oxoàcid comú del carboni (+4)." } },
-            { id: "ter_acid11", category: "ternarios", formula: "H2CrO4", names: { es: ["ácido crómico", "tetraoxidocromato de dihidrógeno"], ca: ["àcid cròmic", "tetraoxidocromat de dihidrogen"] }, tip: { es: "Cromo actuando como no metal con +6.", ca: "Crom actuant amb +6." } },
-            { id: "ter_acid12", category: "ternarios", formula: "H2Cr2O7", names: { es: ["ácido dicrómico", "heptaoxidodicromato de dihidrógeno"], ca: ["àcid dicròmic", "heptaoxidodicromat de dihidrogen"] }, tip: { es: "Ácido polimerizado del cromo (+6).", ca: "Àcid polimeritzat del crom (+6)." } },
-            { id: "ter_acid13", category: "ternarios", formula: "HMnO4", names: { es: ["ácido permangánico", "tetraoxidomanganato de hidrógeno"], ca: ["àcid permangànic", "tetraoxidomanganat d'hidrogen"] }, tip: { es: "Manganeso con valencia +7 (ácido muy oxidante).", ca: "Manganès amb valència +7." } },
+            // --- TERNARIOS: OXOÁCIDOS (CON ADICIÓN Y DE HIDRÓGENO) ---
+            { 
+                id: "ter_acid1", 
+                category: "ternarios", 
+                formula: "H2SO4", 
+                names: { 
+                    es: [
+                        "ácido sulfúrico", "acido sulfurico",
+                        "dihidroxidodioxidoazufre", "dihidroxidodioxidosofre",
+                        "dihidrogeno(tetraoxidosulfato)", "dihidrogen(tetraoxidsulfat)"
+                    ], 
+                    ca: [
+                        "àcid sulfúric", "acid sulfuric",
+                        "dihidroxidodioxidsofre", "dihidroxidodioxidazufre",
+                        "dihidrogen(tetraoxidsulfat)", "dihidrogen(tetraoxidosulfat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₂SO₄: Tradicional: ácido sulfúrico. Adición: dihidroxidodioxidoazufre [SO₂(OH)₂]. Hidrógeno: dihidrogeno(tetraoxidosulfato).", 
+                    ca: "H₂SO₄: Tradicional: àcid sulfúric. Addició: dihidroxidodioxidsofre [SO₂(OH)₂]. Hidrogen: dihidrogen(tetraoxidsulfat)." 
+                } 
+            },
+            { 
+                id: "ter_acid2", 
+                category: "ternarios", 
+                formula: "H2SO3", 
+                names: { 
+                    es: [
+                        "ácido sulfuroso", "acido sulfuroso",
+                        "dihidroxidooxidoazufre", "dihidroxidooxidosofre",
+                        "dihidrogeno(trioxidosulfato)", "dihidrogen(trioxidsulfat)"
+                    ], 
+                    ca: [
+                        "àcid sulfurós", "acid sulfuros",
+                        "dihidroxidoxidsofre",
+                        "dihidrogen(trioxidsulfat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₂SO₃: Tradicional: ácido sulfuroso. Adición: dihidroxidooxidoazufre [SO(OH)₂]. Hidrógeno: dihidrogeno(trioxidosulfato).", 
+                    ca: "H₂SO₃: Tradicional: àcid sulfurós. Addició: dihidroxidoxidsofre [SO(OH)₂]. Hidrogen: dihidrogen(trioxidsulfat)." 
+                } 
+            },
+            { 
+                id: "ter_acid3", 
+                category: "ternarios", 
+                formula: "HNO3", 
+                names: { 
+                    es: [
+                        "ácido nítrico", "acido nitrico",
+                        "hidroxidodioxidonitrogeno", "hidroxidodioxidonitrogen",
+                        "hidrogeno(trioxidonitrato)", "hidrogen(trioxidnitrat)"
+                    ], 
+                    ca: [
+                        "àcid nítric", "acid nitric",
+                        "hidroxidioxidnitrogen", "hidroxidodioxidnitrogen",
+                        "hidrogen(trioxidnitrat)", "hidrogen(trioxidonitrat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HNO₃: Tradicional: ácido nítrico. Adición: hidroxidodioxidonitrogeno [NO₂(OH)]. Hidrógeno: hidrogeno(trioxidonitrato).", 
+                    ca: "HNO₃: Tradicional: àcid nítric. Addició: hidroxidioxidnitrogen [NO₂(OH)]. Hidrogen: hidrogen(trioxidnitrat)." 
+                } 
+            },
+            { 
+                id: "ter_acid4", 
+                category: "ternarios", 
+                formula: "HNO2", 
+                names: { 
+                    es: [
+                        "ácido nitroso", "acido nitroso",
+                        "hidroxidooxidonitrogeno", "hidroxidoxidonitrogen",
+                        "hidrogeno(dioxidonitrato)", "hidrogen(dioxidnitrat)"
+                    ], 
+                    ca: [
+                        "àcid nitrós", "acid nitros",
+                        "hidroxidoxidnitrogen",
+                        "hidrogen(dioxidnitrat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HNO₂: Tradicional: ácido nitroso. Adición: hidroxidooxidonitrogeno [NO(OH)]. Hidrógeno: hidrogeno(dioxidonitrato).", 
+                    ca: "HNO₂: Tradicional: àcid nitrós. Addició: hidroxidoxidnitrogen [NO(OH)]. Hidrogen: hidrogen(dioxidnitrat)." 
+                } 
+            },
+            { 
+                id: "ter_acid5", 
+                category: "ternarios", 
+                formula: "HClO4", 
+                names: { 
+                    es: [
+                        "ácido perclórico", "acido perclorico",
+                        "hidroxidotrioxidocloro", "hidroxidtrioxidclor",
+                        "hidrogeno(tetraoxidoclorato)", "hidrogen(tetraoxidclorat)"
+                    ], 
+                    ca: [
+                        "àcid perclòric", "acid percloric",
+                        "hidroxidtrioxidclor", "hidroxidotrioxidocloro",
+                        "hidrogen(tetraoxidclorat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HClO₄: Tradicional: ácido perclórico. Adición: hidroxidotrioxidocloro [ClO₃(OH)]. Hidrógeno: hidrogeno(tetraoxidoclorato).", 
+                    ca: "HClO₄: Tradicional: àcid perclòric. Addició: hidroxidtrioxidclor [ClO₃(OH)]. Hidrogen: hidrogen(tetraoxidclorat)." 
+                } 
+            },
+            { 
+                id: "ter_acid6", 
+                category: "ternarios", 
+                formula: "HClO3", 
+                names: { 
+                    es: [
+                        "ácido clórico", "acido clorico",
+                        "hidroxidodioxidocloro", "hidroxidioxidclor",
+                        "hidrogeno(trioxidoclorato)", "hidrogen(trioxidclorat)"
+                    ], 
+                    ca: [
+                        "àcid clòric", "acid cleric",
+                        "hidroxidioxidclor",
+                        "hidrogen(trioxidclorat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HClO₃: Tradicional: ácido clórico. Adición: hidroxidodioxidocloro [ClO₂(OH)]. Hidrógeno: hidrogeno(trioxidoclorato).", 
+                    ca: "HClO₃: Tradicional: àcid clòric. Addició: hidroxidioxidclor [ClO₂(OH)]. Hidrogen: hidrogen(trioxidclorat)." 
+                } 
+            },
+            { 
+                id: "ter_acid7", 
+                category: "ternarios", 
+                formula: "HClO2", 
+                names: { 
+                    es: [
+                        "ácido cloroso", "acido cloroso",
+                        "hidroxidooxidocloro", "hidroxidoxidclor",
+                        "hidrogeno(dioxidoclorato)", "hidrogen(dioxidclorat)"
+                    ], 
+                    ca: [
+                        "àcid clorós", "acid cloros",
+                        "hidroxidoxidclor",
+                        "hidrogen(dioxidclorat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HClO₂: Tradicional: ácido cloroso. Adición: hidroxidooxidocloro [ClO(OH)]. Hidrógeno: hidrogeno(dioxidoclorato).", 
+                    ca: "HClO₂: Tradicional: àcid clorós. Addició: hidroxidoxidclor [ClO(OH)]. Hidrogen: hidrogen(dioxidclorat)." 
+                } 
+            },
+            { 
+                id: "ter_acid8", 
+                category: "ternarios", 
+                formula: "HClO", 
+                names: { 
+                    es: [
+                        "ácido hipocloroso", "acido hipocloroso",
+                        "hidroxidocloro", "hidroxidclor",
+                        "hidrogeno(oxidoclorato)", "hidrogen(oxidclorat)", "hidrogeno(monoxidoclorato)"
+                    ], 
+                    ca: [
+                        "àcid hipoclorós", "acid hipocloros",
+                        "hidroxidclor",
+                        "hidrogen(oxidclorat)", "hidrogen(monoxidclorat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HClO: Tradicional: ácido hipocloroso. Adición: hidroxidocloro [Cl(OH)]. Hidrógeno: hidrogeno(oxidoclorato).", 
+                    ca: "HClO: Tradicional: àcid hipoclorós. Addició: hidroxidclor [Cl(OH)]. Hidrogen: hidrogen(oxidclorat)." 
+                } 
+            },
+            { 
+                id: "ter_acid9", 
+                category: "ternarios", 
+                formula: "H3PO4", 
+                names: { 
+                    es: [
+                        "ácido fosfórico", "acido fosforico", "ácido ortofosfórico",
+                        "trihidroxidooxidofosforo", "trihidroxidoxidfosfor",
+                        "trihidrogeno(tetraoxidofosfato)", "trihidrogen(tetraoxidfosfat)"
+                    ], 
+                    ca: [
+                        "àcid fosfòric", "acid fosforic", "àcid ortofosfòric",
+                        "trihidroxidoxidfosfor",
+                        "trihidrogen(tetraoxidfosfat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₃PO₄: Tradicional: ácido fosfórico. Adición: trihidroxidooxidofosforo [PO(OH)₃]. Hidrógeno: trihidrogeno(tetraoxidofosfato).", 
+                    ca: "H₃PO₄: Tradicional: àcid fosfòric. Addició: trihidroxidoxidfosfor [PO(OH)₃]. Hidrogen: trihidrogen(tetraoxidfosfat)." 
+                } 
+            },
+            { 
+                id: "ter_acid10", 
+                category: "ternarios", 
+                formula: "H2CO3", 
+                names: { 
+                    es: [
+                        "ácido carbónico", "acido carbonico",
+                        "dihidroxidooxidocarbono", "dihidroxidoxidcarboni",
+                        "dihidrogeno(trioxidocarbonato)", "dihidrogen(trioxidcarbonat)"
+                    ], 
+                    ca: [
+                        "àcid carbònic", "acid carbonic",
+                        "dihidroxidoxidcarboni",
+                        "dihidrogen(trioxidcarbonat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₂CO₃: Tradicional: ácido carbónico. Adición: dihidroxidooxidocarbono [CO(OH)₂]. Hidrógeno: dihidrogeno(trioxidocarbonato).", 
+                    ca: "H₂CO₃: Tradicional: àcid carbònic. Addició: dihidroxidoxidcarboni [CO(OH)₂]. Hidrogen: dihidrogen(trioxidcarbonat)." 
+                } 
+            },
+            { 
+                id: "ter_acid11", 
+                category: "ternarios", 
+                formula: "H2CrO4", 
+                names: { 
+                    es: [
+                        "ácido crómico", "acido cromico",
+                        "dihidroxidodioxidocromo",
+                        "dihidrogeno(tetraoxidocromato)", "dihidrogen(tetraoxidcromat)"
+                    ], 
+                    ca: [
+                        "àcid cròmic", "acid cromic",
+                        "dihidroxidodioxidcrom",
+                        "dihidrogen(tetraoxidcromat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₂CrO₄: Tradicional: ácido crómico. Adición: dihidroxidodioxidocromo [CrO₂(OH)₂]. Hidrógeno: dihidrogeno(tetraoxidocromato).", 
+                    ca: "H₂CrO₄: Tradicional: àcid cròmic. Addició: dihidroxidodioxidcrom [CrO₂(OH)₂]. Hidrogen: dihidrogen(tetraoxidcromat)." 
+                } 
+            },
+            { 
+                id: "ter_acid12", 
+                category: "ternarios", 
+                formula: "H2Cr2O7", 
+                names: { 
+                    es: [
+                        "ácido dicrómico", "acido dicromico",
+                        "dihidrogeno(heptaoxidodicromato)", "dihidrogen(heptaoxiddicromat)"
+                    ], 
+                    ca: [
+                        "àcid dicròmic", "acid dicromic",
+                        "dihidrogen(heptaoxiddicromat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "H₂Cr₂O₇: Tradicional: ácido dicrómico. Hidrógeno: dihidrogeno(heptaoxidodicromato).", 
+                    ca: "H₂Cr₂O₇: Tradicional: àcid dicròmic. Hidrogen: dihidrogen(heptaoxiddicromat)." 
+                } 
+            },
+            { 
+                id: "ter_acid13", 
+                category: "ternarios", 
+                formula: "HMnO4", 
+                names: { 
+                    es: [
+                        "ácido permangánico", "acido permanganico",
+                        "hidroxidotrioxidomanganeso", "hidroxidtrioxidmanganes",
+                        "hidrogeno(tetraoxidomanganato)", "hidrogen(tetraoxidmanganat)"
+                    ], 
+                    ca: [
+                        "àcid permangànic", "acid permanganic",
+                        "hidroxidtrioxidmanganès",
+                        "hidrogen(tetraoxidmanganat)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "HMnO₄: Tradicional: ácido permangánico. Adición: hidroxidotrioxidomanganeso [MnO₃(OH)]. Hidrógeno: hidrogeno(tetraoxidomanganato).", 
+                    ca: "HMnO₄: Tradicional: àcid permangànic. Addició: hidroxidtrioxidmanganès [MnO₃(OH)]. Hidrogen: hidrogen(tetraoxidmanganat)." 
+                } 
+            },
 
             // --- TERNARIOS: OXOSALES ---
-            { id: "ter_salt1", category: "ternarios", formula: "CaCO3", names: { es: ["carbonato de calcio", "trioxidocarbonato de calcio"], ca: ["carbonat de calci", "trioxidocarbonat de calci"] }, tip: { es: "Sal neutra derivada del ácido carbónico. Anión CO3(2-).", ca: "Sal neutra. L'anió carbonat és CO3(2-)." } },
-            { id: "ter_salt2", category: "ternarios", formula: "NaClO", names: { es: ["hipoclorito de sodio", "monoxidoclorato de sodio"], ca: ["hipoclorit de sodi", "monoxidoclorat de sodi"] }, tip: { es: "Proviene del ácido hipocloroso (HClO), de ahí el sufijo -ito.", ca: "Prové de l'àcid hipoclorós, d'aquí -it." } },
-            { id: "ter_salt3", category: "ternarios", formula: "KMnO4", names: { es: ["permanganato de potasio", "tetraoxidomanganato de potasio"], ca: ["permanganat de potassi", "tetraoxidomanganat de potassi"] }, tip: { es: "Oxosal del manganeso actuando con +7.", ca: "Oxosal de manganès actuant amb +7." } },
-            { id: "ter_salt4", category: "ternarios", formula: "CuSO4", names: { es: ["sulfato de cobre(II)", "tetraoxidosulfato de cobre", "sulfato de cobre(2+)"], ca: ["sulfat de coure(II)", "tetraoxidosulfat de coure", "sulfat de coure(2+)"] }, tip: { es: "Sulfato (-2) y cobre (+2) simplifican.", ca: "Sulfat (-2) i coure (+2) se simplifica." } },
-            { id: "ter_salt5", category: "ternarios", formula: "KNO3", names: { es: ["nitrato de potasio", "trioxidonitrato de potasio"], ca: ["nitrat de potassi", "trioxidonitrat de potassi"] }, tip: { es: "El ion nitrato (NO3-) se combina con el potasio (+1).", ca: "L'ió nitrat es combina amb el potassi." } },
-            { id: "ter_salt6", category: "ternarios", formula: "(NH4)2SO4", names: { es: ["sulfato de amonio", "tetraoxidosulfato de amonio"], ca: ["sulfat d'amoni", "tetraoxidosulfat d'amoni"] }, tip: { es: "Catión poliatómico amonio (NH4+) requiere paréntesis al cruzarse con el 2 del sulfato.", ca: "El catió amoni requereix parèntesi." } },
-            { id: "ter_salt7", category: "ternarios", formula: "Fe(NO3)3", names: { es: ["nitrato de hierro(III)", "trioxidonitrato de hierro(III)"], ca: ["nitrat de ferro(III)", "trioxidonitrat de ferro(III)"] }, tip: { es: "El anión nitrato lleva paréntesis por la valencia 3 del hierro.", ca: "L'anió nitrat porta parèntesis." } },
-            { id: "ter_salt8", category: "ternarios", formula: "K2Cr2O7", names: { es: ["dicromato de potasio", "heptaoxidodicromato de dipotasio"], ca: ["dicromat de potassi", "heptaoxidodicromat de dipotassi"] }, tip: { es: "Sal clave en volumetrías redox (PAU).", ca: "Sal clau a la PAU." } },
-            { id: "ter_salt9", category: "ternarios", formula: "Na3PO4", names: { es: ["fosfato de sodio", "tetraoxidofosfato de trisodio"], ca: ["fosfat de sodi", "tetraoxidofosfat de trisodi"] }, tip: { es: "Sal derivada del ácido fosfórico perdiendo sus 3 protones.", ca: "Deriva de l'àcid fosfòric (perd 3 H)." } },
+            { 
+                id: "ter_salt1", 
+                category: "ternarios", 
+                formula: "CaCO3", 
+                names: { 
+                    es: [
+                        "carbonato de calcio", "trioxidocarbonato de calcio",
+                        "trioxidocarbonato(2-) de calcio"
+                    ], 
+                    ca: [
+                        "carbonat de calci", "trioxidcarbonat de calci",
+                        "trioxidcarbonat(2-) de calci"
+                    ] 
+                }, 
+                tip: { 
+                    es: "CaCO₃: Tradicional: carbonato de calcio. Composición: trioxidocarbonato de calcio. Adición: trioxidocarbonato(2-) de calcio.", 
+                    ca: "CaCO₃: Tradicional: carbonat de calci. Composició: trioxidcarbonat de calci. Addició: trioxidcarbonat(2-) de calci." 
+                } 
+            },
+            { 
+                id: "ter_salt2", 
+                category: "ternarios", 
+                formula: "NaClO", 
+                names: { 
+                    es: [
+                        "hipoclorito de sodio", "oxidoclorato de sodio", "monoxidoclorato de sodio",
+                        "oxidoclorato(1-) de sodio"
+                    ], 
+                    ca: [
+                        "hipoclorit de sodi", "oxidclorat de sodi", "monoxidclorat de sodi",
+                        "oxidclorat(1-) de sodi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "NaClO: Tradicional: hipoclorito de sodio. Composición: oxidoclorato de sodio. Adición: oxidoclorato(1-) de sodio.", 
+                    ca: "NaClO: Tradicional: hipoclorit de sodi. Composició: oxidclorat de sodi. Addició: oxidclorat(1-) de sodi." 
+                } 
+            },
+            { 
+                id: "ter_salt3", 
+                category: "ternarios", 
+                formula: "KMnO4", 
+                names: { 
+                    es: [
+                        "permanganato de potasio", "tetraoxidomanganato de potasio",
+                        "tetraoxidomanganato(1-) de potasio"
+                    ], 
+                    ca: [
+                        "permanganat de potassi", "tetraoxidmanganat de potassi",
+                        "tetraoxidmanganat(1-) de potassi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "KMnO₄: Tradicional: permanganato de potasio. Composición: tetraoxidomanganato de potasio. Adición: tetraoxidomanganato(1-) de potasio.", 
+                    ca: "KMnO₄: Tradicional: permanganat de potassi. Composició: tetraoxidmanganat de potassi. Addició: tetraoxidmanganat(1-) de potassi." 
+                } 
+            },
+            { 
+                id: "ter_salt4", 
+                category: "ternarios", 
+                formula: "CuSO4", 
+                names: { 
+                    es: [
+                        "sulfato de cobre(II)", "sulfato de cobre(2+)", 
+                        "tetraoxidosulfato de cobre",
+                        "tetraoxidosulfato(2-) de cobre(2+)"
+                    ], 
+                    ca: [
+                        "sulfat de coure(II)", "sulfat de coure(2+)", 
+                        "tetraoxidsulfat de coure",
+                        "tetraoxidsulfat(2-) de coure(2+)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "CuSO₄: Tradicional/Stock: sulfato de cobre(II). Composición: tetraoxidosulfato de cobre. Adición: tetraoxidosulfato(2-) de cobre(2+).", 
+                    ca: "CuSO₄: Tradicional/Stock: sulfat de coure(II). Composició: tetraoxidsulfat de coure. Addició: tetraoxidsulfat(2-) de coure(2+)." 
+                } 
+            },
+            { 
+                id: "ter_salt5", 
+                category: "ternarios", 
+                formula: "KNO3", 
+                names: { 
+                    es: [
+                        "nitrato de potasio", "trioxidonitrato de potasio",
+                        "trioxidonitrato(1-) de potasio"
+                    ], 
+                    ca: [
+                        "nitrat de potassi", "trioxidnitrat de potassi",
+                        "trioxidnitrat(1-) de potassi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "KNO₃: Tradicional: nitrato de potasio. Composición: trioxidonitrato de potasio. Adición: trioxidonitrato(1-) de potasio.", 
+                    ca: "KNO₃: Tradicional: nitrat de potassi. Composició: trioxidnitrat de potassi. Addició: trioxidnitrat(1-) de potassi." 
+                } 
+            },
+            { 
+                id: "ter_salt6", 
+                category: "ternarios", 
+                formula: "(NH4)2SO4", 
+                names: { 
+                    es: [
+                        "sulfato de amonio", "tetraoxidosulfato de diamonio", "tetraoxidosulfato de amonio",
+                        "tetraoxidosulfato(2-) de amonio"
+                    ], 
+                    ca: [
+                        "sulfat d'amoni", "tetraoxidsulfat de diamoni", "tetraoxidsulfat d'amoni",
+                        "tetraoxidsulfat(2-) d'amoni"
+                    ] 
+                }, 
+                tip: { 
+                    es: "(NH₄)₂SO₄: Tradicional: sulfato de amonio. Composición: tetraoxidosulfato de diamonio. Adición: tetraoxidosulfato(2-) de amonio.", 
+                    ca: "(NH₄)₂SO₄: Tradicional: sulfat d'amoni. Composició: tetraoxidsulfat de diamoni. Addició: tetraoxidsulfat(2-) d'amoni." 
+                } 
+            },
+            { 
+                id: "ter_salt7", 
+                category: "ternarios", 
+                formula: "Fe(NO3)3", 
+                names: { 
+                    es: [
+                        "nitrato de hierro(III)", "nitrato de hierro(3+)", 
+                        "tris(trioxidonitrato) de hierro",
+                        "trioxidonitrato(1-) de hierro(3+)"
+                    ], 
+                    ca: [
+                        "nitrat de ferro(III)", "nitrat de ferro(3+)", 
+                        "tris(trioxidnitrat) de ferro",
+                        "trioxidnitrat(1-) de ferro(3+)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "Fe(NO₃)₃: Tradicional/Stock: nitrato de hierro(III). Composición: tris(trioxidonitrato) de hierro. Adición: trioxidonitrato(1-) de hierro(3+).", 
+                    ca: "Fe(NO₃)₃: Tradicional/Stock: nitrat de ferro(III). Composició: tris(trioxidnitrat) de ferro. Addició: trioxidnitrat(1-) de ferro(3+)." 
+                } 
+            },
+            { 
+                id: "ter_salt8", 
+                category: "ternarios", 
+                formula: "K2Cr2O7", 
+                names: { 
+                    es: [
+                        "dicromato de potasio", 
+                        "heptaoxidodicromato de dipotasio",
+                        "heptaoxidodicromato(2-) de potasio"
+                    ], 
+                    ca: [
+                        "dicromat de potassi", 
+                        "heptaoxiddicromat de dipotassi",
+                        "heptaoxiddicromat(2-) de potassi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "K₂Cr₂O₇: Tradicional: dicromato de potasio. Composición: heptaoxidodicromato de dipotasio. Adición: heptaoxidodicromato(2-) de potasio.", 
+                    ca: "K₂Cr₂O₇: Tradicional: dicromat de potassi. Composició: heptaoxiddicromat de dipotassi. Addició: heptaoxiddicromat(2-) de potassi." 
+                } 
+            },
+            { 
+                id: "ter_salt9", 
+                category: "ternarios", 
+                formula: "Na3PO4", 
+                names: { 
+                    es: [
+                        "fosfato de sodio", 
+                        "tetraoxidofosfato de trisodio",
+                        "tetraoxidofosfato(3-) de sodio"
+                    ], 
+                    ca: [
+                        "fosfat de sodi", 
+                        "tetraoxidfosfat de trisodi",
+                        "tetraoxidfosfat(3-) de sodi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "Na₃PO₄: Tradicional: fosfato de sodio. Composición: tetraoxidofosfato de trisodio. Adición: tetraoxidofosfato(3-) de sodio.", 
+                    ca: "Na₃PO₄: Tradicional: fosfat de sodi. Composició: tetraoxidfosfat de trisodi. Addició: tetraoxidfosfat(3-) de sodi." 
+                } 
+            },
+            { 
+                id: "ter_salt10", 
+                category: "ternarios", 
+                formula: "Na2CO3", 
+                names: { 
+                    es: [
+                        "carbonato de sodio", 
+                        "trioxidocarbonato de disodio",
+                        "trioxidocarbonato(2-) de sodio"
+                    ], 
+                    ca: [
+                        "carbonat de sodi", 
+                        "trioxidcarbonat de disodi",
+                        "trioxidcarbonat(2-) de sodi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "Na₂CO₃: Tradicional: carbonato de sodio. Composición: trioxidocarbonato de disodio. Adición: trioxidocarbonato(2-) de sodio.", 
+                    ca: "Na₂CO₃: Tradicional: carbonat de sodi. Composició: trioxidcarbonat de disodi. Addició: trioxidcarbonat(2-) de sodi." 
+                } 
+            },
+            { 
+                id: "ter_salt11", 
+                category: "ternarios", 
+                formula: "Fe2(SO4)3", 
+                names: { 
+                    es: [
+                        "sulfato de hierro(III)", "sulfato de hierro(3+)",
+                        "tris(tetraoxidosulfato) de dihierro",
+                        "tetraoxidosulfato(2-) de hierro(3+)"
+                    ], 
+                    ca: [
+                        "sulfat de ferro(III)", "sulfat de ferro(3+)",
+                        "tris(tetraoxidsulfat) de diferro",
+                        "tetraoxidsulfat(2-) de ferro(3+)"
+                    ] 
+                }, 
+                tip: { 
+                    es: "Fe₂(SO₄)₃: Tradicional/Stock: sulfato de hierro(III). Composición: tris(tetraoxidosulfato) de dihierro. Adición: tetraoxidosulfato(2-) de hierro(3+).", 
+                    ca: "Fe₂(SO₄)₃: Tradicional/Stock: sulfat de ferro(III). Composició: tris(tetraoxidsulfat) de diferro. Addició: tetraoxidsulfat(2-) de ferro(3+)." 
+                } 
+            },
 
             // --- CUATERNARIOS: SALES ÁCIDAS ---
-            { id: "quat_salt1", category: "cuaternarios", formula: "NaHCO3", names: { es: ["hidrógenocarbonato de sodio", "hidrogenocarbonato de sodio"], ca: ["hidrogencarbonat de sodi"] }, tip: { es: "Sal ácida. Conserva un hidrógeno sustituible del H2CO3.", ca: "Sal àcida. Conserva un hidrogen de l'àcid original." } },
-            { id: "quat_salt2", category: "cuaternarios", formula: "NaHSO4", names: { es: ["hidrógenosulfato de sodio", "hidrogenosulfato de sodio"], ca: ["hidrogensulfat de sodi"] }, tip: { es: "Sustitución parcial del ácido sulfúrico.", ca: "Substitució parcial de l'àcid sulfúric." } },
-            { id: "quat_salt3", category: "cuaternarios", formula: "K2HPO4", names: { es: ["hidrógenofosfato de potasio", "hidrogenofosfato de dipotasio"], ca: ["hidrogenfosfat de potassi", "hidrogenfosfat de dipotassi"] }, tip: { es: "El H3PO4 ha perdido dos protones, dejando el anión HPO4(2-).", ca: "L'àcid ha perdut dos protons." } },
-            { id: "quat_salt4", category: "cuaternarios", formula: "KH2PO4", names: { es: ["dihidrógenofosfato de potasio", "dihidrogenofosfato de potasio"], ca: ["dihidrogenfosfat de potassi"] }, tip: { es: "El H3PO4 pierde un protón, dejando H2PO4(-).", ca: "L'àcid perd un sol protó." } },
-            { id: "quat_salt5", category: "cuaternarios", formula: "Ca(HCO3)2", names: { es: ["hidrógenocarbonato de calcio", "bis(hidrogenocarbonato) de calcio"], ca: ["hidrogencarbonat de calci", "bis(hidrogencarbonat) de calci"] }, tip: { es: "El anión hidrogenocarbonato (carga -1) se cruza con el calcio (+2).", ca: "Necessita multiplicar-se per 2 pel calci." } }
+            { 
+                id: "quat_salt1", 
+                category: "cuaternarios", 
+                formula: "NaHCO3", 
+                names: { 
+                    es: [
+                        "hidrógenocarbonato de sodio", "hidrogenocarbonato de sodio",
+                        "hidrogeno(trioxidocarbonato) de sodio",
+                        "hidroxidodioxidocarbonato(1-) de sodio"
+                    ], 
+                    ca: [
+                        "hidrogencarbonat de sodi", 
+                        "hidrogen(trioxidcarbonat) de sodi",
+                        "hidroxidodioxidcarbonat(1-) de sodi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "NaHCO₃: Tradicional: hidrogenocarbonato de sodio (bicarbonato). Composición: hidrogeno(trioxidocarbonato) de sodio.", 
+                    ca: "NaHCO₃: Tradicional: hidrogencarbonat de sodi. Composició: hidrogen(trioxidcarbonat) de sodi." 
+                } 
+            },
+            { 
+                id: "quat_salt2", 
+                category: "cuaternarios", 
+                formula: "NaHSO4", 
+                names: { 
+                    es: [
+                        "hidrógenosulfato de sodio", "hidrogenosulfato de sodio",
+                        "hidrogeno(tetraoxidosulfato) de sodio"
+                    ], 
+                    ca: [
+                        "hidrogensulfat de sodi",
+                        "hidrogen(tetraoxidsulfat) de sodi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "NaHSO₄: Tradicional: hidrogenosulfato de sodio. Composición: hidrogeno(tetraoxidosulfato) de sodio.", 
+                    ca: "NaHSO₄: Tradicional: hidrogensulfat de sodi. Composició: hidrogen(tetraoxidsulfat) de sodi." 
+                } 
+            },
+            { 
+                id: "quat_salt3", 
+                category: "cuaternarios", 
+                formula: "K2HPO4", 
+                names: { 
+                    es: [
+                        "hidrógenofosfato de potasio", "hidrogenofosfato de potasio", "hidrogenofosfato de dipotasio",
+                        "hidrogeno(tetraoxidofosfato) de dipotasio", "hidrogeno(tetraoxidofosfato) de potasio"
+                    ], 
+                    ca: [
+                        "hidrogenfosfat de potassi", "hidrogenfosfat de dipotassi",
+                        "hidrogen(tetraoxidfosfat) de dipotassi", "hidrogen(tetraoxidfosfat) de potassi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "K₂HPO₄: Derivado del H₃PO₄ tras perder 2 protones.", 
+                    ca: "K₂HPO₄: Deriva de l'H₃PO₄ després de perdre 2 protons." 
+                } 
+            },
+            { 
+                id: "quat_salt4", 
+                category: "cuaternarios", 
+                formula: "KH2PO4", 
+                names: { 
+                    es: [
+                        "dihidrógenofosfato de potasio", "dihidrogenofosfato de potasio",
+                        "dihidrogeno(tetraoxidofosfato) de potasio"
+                    ], 
+                    ca: [
+                        "dihidrogenfosfat de potassi",
+                        "dihidrogen(tetraoxidfosfat) de potassi"
+                    ] 
+                }, 
+                tip: { 
+                    es: "KH₂PO₄: Derivado del H₃PO₄ tras perder 1 protón.", 
+                    ca: "KH₂PO₄: Deriva de l'H₃PO₄ després de perdre 1 protó." 
+                } 
+            },
+            { 
+                id: "quat_salt5", 
+                category: "cuaternarios", 
+                formula: "Ca(HCO3)2", 
+                names: { 
+                    es: [
+                        "hidrógenocarbonato de calcio", "hidrogenocarbonato de calcio",
+                        "bis[hidrogeno(trioxidocarbonato)] de calcio"
+                    ], 
+                    ca: [
+                        "hidrogencarbonat de calci",
+                        "bis[hidrogen(trioxidcarbonat)] de calci"
+                    ] 
+                }, 
+                tip: { 
+                    es: "Ca(HCO₃)₂: Composición con prefijo multiplicador 'bis'.", 
+                    ca: "Ca(HCO₃)₂: Composició amb prefix multiplicador 'bis'." 
+                } 
+            }
         ];
 
-        // --- BASE DE DATOS DE ERRORES DIAGNÓSTICOS INTERACTIVOS (AMPLIADA) ---
         const COMMON_ERRORS = [
             {
                 incorrect: "Ca₂O₂",
@@ -479,7 +1093,7 @@
                     ]
                 },
                 explanation: {
-                    es: "¡Exacto! Según la IUPAC, en una fórmula química el constituyente electropositivo (catión/metal) se escribe primero, seguido del electronegativo (anión/no metal). Por eso se formula <strong>NaCl</strong> aunque al leerlo en español se diga 'cloruro de sodio'.",
+                    es: "¡Exacto! Según la IUPAC, en una fórmula química el constituyente electropositivo (catión/metal) se escribe primero, seguido del electronegativo (anión/no metal). Por eso se formula <strong>NaCl</strong>.",
                     ca: "Exacte! Segons la IUPAC, en una fórmula química el constituent electropositiu (metall) s'escriu primer, seguit de l'electronegatiu. Per això es formula <strong>NaCl</strong>."
                 }
             },
@@ -501,7 +1115,7 @@
                     ]
                 },
                 explanation: {
-                    es: "¡Muy bien! Recuerda la regla: el ácido terminado en <em>-ico</em> (nítrico, +5) forma sales terminadas en <em>-ato</em> (nitrato). El ácido terminado en <em>-oso</em> (nitroso, +3) forma sales terminadas en <em>-ito</em> (nitrito). Por tanto, el nitrato es <strong>KNO₃</strong>.",
+                    es: "¡Muy bien! Recuerda la regla: el ácido terminado en <em>-ico</em> (nítrico, +5) forma sales terminadas en <em>-ato</em> (nitrato). El ácido en <em>-oso</em> (+3) forma sales en <em>-ito</em> (nitrito). Por tanto, el nitrato es <strong>KNO₃</strong>.",
                     ca: "Molt bé! Recorda la regla: l'àcid acabat en <em>-ic</em> (+5) forma sals acabades en <em>-at</em> (nitrat). L'àcid en <em>-ós</em> (+3) forma sals en <em>-it</em> (nitrit). Així, el nitrat és <strong>KNO₃</strong>."
                 }
             },
@@ -551,7 +1165,6 @@
             }
         ];
 
-        // --- DICCIONARIO BILINGÜE ---
         const LOCALIZATION = {
             es: {
                 subtitle: "Dpto. Física y Química — Elena Ruiz Alfaro",
@@ -631,21 +1244,18 @@
             }
         };
 
-        // --- ESTADO GLOBAL DE LA APLICACIÓN ---
         let CURRENT_LANG = "es";
-        let CURRENT_SCORE = 0; // Racha actual
-        let MAX_SCORE = 0;     // Racha máxima (récord)
-        let TOTAL_CORRECT = 0; // Aciertos totales acumulados
+        let CURRENT_SCORE = 0;
+        let MAX_SCORE = 0;
+        let TOTAL_CORRECT = 0;
         let ACTIVE_CATEGORY = "all";
-        let QUIZ_MODE = "formula"; // "formula", "name" o "mixed"
+        let QUIZ_MODE = "formula";
         let CURRENT_QUESTION = null;
         let currentQuestionMode = "formula"; 
         let STUDENT_NAME = "";
-
-        // Historial detallado de la sesión para el Informe PDF
         let SESSION_HISTORY = [];
 
-        // --- CRONÓMETRO ---
+        // Cronómetro
         let timerSeconds = 0;
         let timerInterval = null;
         let timerIsRunning = false;
@@ -687,24 +1297,167 @@
             document.getElementById('timer-display').innerText = `${min}:${sec}`;
         }
 
-        // --- CORRECCIÓN AVANZADA DE SUBÍNDICES QUÍMICOS ---
         function renderFormula(formula) {
             if (!formula) return "";
-            // Esta expresión regular encuentra números y los envuelve en subíndices, respetando (g) o (aq)
             return formula.replace(/(\d+)/g, '<sub>$1</sub>');
         }
 
-        // --- INICIALIZACIÓN ---
+        const UIB_IONS_DB = [
+            // CATIONES
+            { type: "cation", formula: "Na+", charge: "1+", systematic: { es: "sodio(1+)", ca: "sodi(1+)" }, traditional: { es: "catión sodio", ca: "catió sodi" } },
+            { type: "cation", formula: "Cr3+", charge: "3+", systematic: { es: "cromo(3+)", ca: "crom(3+)" }, traditional: { es: "catión cromo(III)", ca: "catió crom(III)" } },
+            { type: "cation", formula: "Cu+", charge: "1+", systematic: { es: "cobre(1+)", ca: "coure(1+)" }, traditional: { es: "catión cobre(I) (cuproso)", ca: "catió coure(I) (cuprós)" } },
+            { type: "cation", formula: "Cu2+", charge: "2+", systematic: { es: "cobre(2+)", ca: "coure(2+)" }, traditional: { es: "catión cobre(II) (cúprico)", ca: "catió coure(II) (cúpric)" } },
+            { type: "cation", formula: "Fe2+", charge: "2+", systematic: { es: "hierro(2+)", ca: "ferro(2+)" }, traditional: { es: "catión hierro(II) (ferroso)", ca: "catió ferro(II) (ferrós)" } },
+            { type: "cation", formula: "Fe3+", charge: "3+", systematic: { es: "hierro(3+)", ca: "ferro(3+)" }, traditional: { es: "catión hierro(III) (férrico)", ca: "catió ferro(III) (fèrric)" } },
+            { type: "cation", formula: "H+", charge: "1+", systematic: { es: "hidrógeno(1+)", ca: "hidrogen(1+)" }, traditional: { es: "hidrón (protón)", ca: "hidró (protó)" } },
+            { type: "cation", formula: "Hg2 2+", charge: "2+", systematic: { es: "dimercurio(2+)", ca: "dimercuri(2+)" }, traditional: { es: "catión mercurio(I)", ca: "catió mercuri(I)" } },
+            { type: "cation", formula: "Pb4+", charge: "4+", systematic: { es: "plomo(4+)", ca: "plom(4+)" }, traditional: { es: "catión plomo(IV)", ca: "catió plom(IV)" } },
+            { type: "cation", formula: "Co2+", charge: "2+", systematic: { es: "cobalto(2+)", ca: "cobalt(2+)" }, traditional: { es: "catión cobalto(II)", ca: "catió cobalt(II)" } },
+            { type: "cation", formula: "NH4+", charge: "1+", systematic: { es: "azanio (substitución)", ca: "azani (substitució)" }, traditional: { es: "amonio", ca: "amoni" } },
+            { type: "cation", formula: "H3O+", charge: "1+", systematic: { es: "oxidanio (substitución)", ca: "oxidani (substitució)" }, traditional: { es: "oxonio (descartado: hidronio)", ca: "oxoni (descartat: hidroni)" } },
+
+            // ANIONES
+            { type: "anion", formula: "Cl-", charge: "1-", systematic: { es: "cloruro(1-)", ca: "clorur(1-)" }, traditional: { es: "cloruro", ca: "clorur" } },
+            { type: "anion", formula: "S2-", charge: "2-", systematic: { es: "sulfuro(2-)", ca: "sulfur(2-)" }, traditional: { es: "sulfuro", ca: "sulfur" } },
+            { type: "anion", formula: "H-", charge: "1-", systematic: { es: "hidruro(1-)", ca: "hidrur(1-)" }, traditional: { es: "hidruro", ca: "hidrur" } },
+            { type: "anion", formula: "P3-", charge: "3-", systematic: { es: "fosfuro(3-)", ca: "fosfur(3-)" }, traditional: { es: "fosfuro", ca: "fosfur" } },
+            { type: "anion", formula: "O2-", charge: "2-", systematic: { es: "óxido(2-)", ca: "òxid(2-)" }, traditional: { es: "óxido", ca: "òxid" } },
+            { type: "anion", formula: "N3-", charge: "3-", systematic: { es: "nitruro(3-)", ca: "nitrur(3-)" }, traditional: { es: "nitruro", ca: "nitrur" } },
+            { type: "anion", formula: "C4-", charge: "4-", systematic: { es: "carburo(4-)", ca: "carbur(4-)" }, traditional: { es: "carburo", ca: "carbur" } },
+            { type: "anion", formula: "S2 2-", charge: "2-", systematic: { es: "disulfuro(2-)", ca: "disulfur(2-)" }, traditional: { es: "disulfuro", ca: "disulfur" } },
+            { type: "anion", formula: "O2 2-", charge: "2-", systematic: { es: "dióxido(2-)", ca: "diòxid(2-)" }, traditional: { es: "peróxido", ca: "peròxid" } },
+            { type: "anion", formula: "C2 2-", charge: "2-", systematic: { es: "dicarburo(2-)", ca: "dicarbur(2-)" }, traditional: { es: "acetiluro", ca: "acetilur" } },
+            { type: "anion", formula: "I3-", charge: "1-", systematic: { es: "triyoduro(1-)", ca: "triiodur(1-)" }, traditional: { es: "triyoduro", ca: "triiodur" } },
+            { type: "anion", formula: "HS-", charge: "1-", systematic: { es: "hidrogeno(sulfuro)(1-)", ca: "hidrogen(sulfur)(1-)" }, traditional: { es: "hidrogenosulfuro", ca: "hidrogensulfur" } },
+            { type: "anion", formula: "PO4 3-", charge: "3-", systematic: { es: "tetraoxidofosfato(3-)", ca: "tetraoxidfosfat(3-)" }, traditional: { es: "fosfato", ca: "fosfat" } },
+            { type: "anion", formula: "SO4 2-", charge: "2-", systematic: { es: "tetraoxidosulfato(2-)", ca: "tetraoxidsulfat(2-)" }, traditional: { es: "sulfato", ca: "sulfat" } },
+            { type: "anion", formula: "SO3 2-", charge: "2-", systematic: { es: "trioxidosulfato(2-)", ca: "trioxidsulfat(2-)" }, traditional: { es: "sulfito", ca: "sulfit" } },
+            { type: "anion", formula: "P2O7 4-", charge: "4-", systematic: { es: "heptaoxidodifosfato(4-)", ca: "heptaoxiddifosfat(4-)" }, traditional: { es: "difosfato", ca: "difosfat" } },
+            { type: "anion", formula: "NO3-", charge: "1-", systematic: { es: "trioxidonitrato(1-)", ca: "trioxidnitrat(1-)" }, traditional: { es: "nitrato", ca: "nitrat" } },
+            { type: "anion", formula: "NO2-", charge: "1-", systematic: { es: "dioxidonitrato(1-)", ca: "dioxidnitrat(1-)" }, traditional: { es: "nitrito", ca: "nitrit" } },
+            { type: "anion", formula: "ClO4-", charge: "1-", systematic: { es: "tetraoxidoclorato(1-)", ca: "tetraoxidclorat(1-)" }, traditional: { es: "perclorato", ca: "perclorat" } },
+            { type: "anion", formula: "ClO3-", charge: "1-", systematic: { es: "trioxidoclorato(1-)", ca: "trioxidclorat(1-)" }, traditional: { es: "clorato", ca: "clorat" } },
+            { type: "anion", formula: "ClO2-", charge: "1-", systematic: { es: "dioxidoclorato(1-)", ca: "dioxidclorat(1-)" }, traditional: { es: "clorito", ca: "clorit" } },
+            { type: "anion", formula: "ClO-", charge: "1-", systematic: { es: "oxidoclorato(1-)", ca: "oxidclorat(1-)" }, traditional: { es: "hipoclorito", ca: "hipoclorit" } },
+            { type: "anion", formula: "CO3 2-", charge: "2-", systematic: { es: "trioxidocarbonato(2-)", ca: "trioxidcarbonat(2-)" }, traditional: { es: "carbonato", ca: "carbonat" } },
+            { type: "anion", formula: "CrO4 2-", charge: "2-", systematic: { es: "tetraoxidocromato(2-)", ca: "tetraoxidcromat(2-)" }, traditional: { es: "cromato", ca: "cromat" } },
+            { type: "anion", formula: "Cr2O7 2-", charge: "2-", systematic: { es: "heptaoxidodicromato(2-)", ca: "heptaoxiddicromat(2-)" }, traditional: { es: "dicromato", ca: "dicromat" } },
+            { type: "anion", formula: "MnO4-", charge: "1-", systematic: { es: "tetraoxidomanganato(1-)", ca: "tetraoxidmanganat(1-)" }, traditional: { es: "permanganato", ca: "permanganat" } },
+            { type: "anion", formula: "HCO3-", charge: "1-", systematic: { es: "hidrogeno(trioxidocarbonato)(1-)", ca: "hidrogen(trioxidcarbonat)(1-)" }, traditional: { es: "hidrogenocarbonato", ca: "hidrogencarbonat" } },
+            { type: "anion", formula: "HSO4-", charge: "1-", systematic: { es: "hidrogeno(tetraoxidosulfato)(1-)", ca: "hidrogen(tetraoxidsulfat)(1-)" }, traditional: { es: "hidrogenosulfato", ca: "hidrogensulfat" } },
+            { type: "anion", formula: "HPO4 2-", charge: "2-", systematic: { es: "hidrogeno(tetraoxidofosfato)(2-)", ca: "hidrogen(tetraoxidfosfat)(2-)" }, traditional: { es: "hidrogenofosfato", ca: "hidrogenfosfat" } },
+            { type: "anion", formula: "H2PO4-", charge: "1-", systematic: { es: "dihidrogeno(tetraoxidofosfato)(1-)", ca: "dihidrogen(tetraoxidfosfat)(1-)" }, traditional: { es: "dihidrogenofosfato", ca: "dihidrogenfosfat" } }
+        ];
+
+        let activeIonsFilter = "all";
+
+        function filterIonsTable(type) {
+            activeIonsFilter = type;
+            const btnAll = document.getElementById('btn-ion-all');
+            const btnCat = document.getElementById('btn-ion-cation');
+            const btnAni = document.getElementById('btn-ion-anion');
+
+            btnAll.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-500 hover:text-slate-800 bg-slate-100";
+            btnCat.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-500 hover:text-slate-800 bg-slate-100";
+            btnAni.className = "px-3 py-1.5 rounded-lg font-semibold text-slate-500 hover:text-slate-800 bg-slate-100";
+
+            if (type === 'all') btnAll.className = "px-3 py-1.5 rounded-lg font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+            else if (type === 'cation') btnCat.className = "px-3 py-1.5 rounded-lg font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+            else btnAni.className = "px-3 py-1.5 rounded-lg font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+
+            buildIonsTable();
+        }
+
+        function formatIonFormula(rawFormula) {
+            const parts = rawFormula.trim().split(" ");
+            let base = parts[0];
+            let charge = parts[1] || "";
+            let baseFormatted = renderFormula(base);
+            
+            if (!charge) {
+                const match = baseFormatted.match(/([0-9]*[+-])$/);
+                if (match) {
+                    const ch = match[1];
+                    baseFormatted = baseFormatted.substring(0, baseFormatted.length - ch.length) + `<sup>${ch}</sup>`;
+                }
+            } else {
+                baseFormatted += `<sup>${charge}</sup>`;
+            }
+            return baseFormatted;
+        }
+
+        function buildIonsTable() {
+            const tbody = document.getElementById('guide-ions-table-body');
+            tbody.innerHTML = "";
+
+            const filtered = UIB_IONS_DB.filter(item => activeIonsFilter === 'all' || item.type === activeIonsFilter);
+
+            filtered.forEach(ion => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/60 transition";
+                
+                const isCat = ion.type === "cation";
+                const badge = isCat
+                    ? `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">${CURRENT_LANG === 'es' ? 'Catión' : 'Catió'}</span>`
+                    : `<span class="bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">${CURRENT_LANG === 'es' ? 'Anión' : 'Anió'}</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-bold mono text-sm ${isCat ? 'text-indigo-900' : 'text-purple-900'}">${formatIonFormula(ion.formula)}</td>
+                    <td class="py-2.5 px-3">${badge}</td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-700">${ion.systematic[CURRENT_LANG]}</td>
+                    <td class="py-2.5 px-3 text-slate-500 font-medium">${ion.traditional[CURRENT_LANG]}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             setLanguage('es');
             loadQuestion();
             buildLabSelectors();
             buildErrorsGrid();
             buildElementsGrid();
+            buildIonsTable();
             startTimer();
         });
 
-        // --- TRADUCCIÓN DINÁMICA ---
+        function switchTab(tabId) {
+            const tabs = ['quiz', 'lab', 'errors', 'guide'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                if (t === tabId) {
+                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition duration-200 bg-white text-indigo-600 shadow-sm border border-slate-200";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function setQuizMode(mode) {
+            QUIZ_MODE = mode;
+            const btnFormula = document.getElementById('btn-mode-formula');
+            const btnName = document.getElementById('btn-mode-name');
+            const btnMixed = document.getElementById('btn-mode-mixed');
+            
+            btnFormula.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+            btnName.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+            btnMixed.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
+
+            if (mode === 'formula') btnFormula.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            else if (mode === 'name') btnName.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            else btnMixed.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
+            
+            loadQuestion();
+        }
+
+        function updateStudentName() {
+            STUDENT_NAME = document.getElementById('student-name-input').value.trim();
+        }
+
         function setLanguage(lang) {
             CURRENT_LANG = lang;
             
@@ -754,6 +1507,16 @@
             document.getElementById('guide-r2-title').innerText = keys.r2Title;
             document.getElementById('guide-r2-desc').innerText = keys.r2Desc;
 
+            document.getElementById('guide-ions-title').innerText = lang === 'es' ? 'Iones de Referencia UIB / IUPAC 2005' : 'Ions de Referència UIB / IUPAC 2005';
+            document.getElementById('guide-ions-desc').innerText = lang === 'es' 
+                ? 'Cationes y aniones homoatómicos, heteropoliatómicos y oxoaniones de la guía oficial del Seminari de Química (UIB).'
+                : 'Cations i anions homoatòmics, heteropoliatòmics i oxoanions de la guia oficial del Seminari de Química (UIB).';
+            document.getElementById('btn-ion-all').innerText = lang === 'es' ? 'Todos' : 'Tots';
+            document.getElementById('btn-ion-cation').innerText = lang === 'es' ? 'Cationes' : 'Cations';
+            document.getElementById('btn-ion-anion').innerText = lang === 'es' ? 'Aniones' : 'Anions';
+            document.getElementById('th-ion-col1').innerText = lang === 'es' ? 'Nombre Sistemático / Carga / Substitución' : 'Nom Sistemàtic / Càrrega / Substitució';
+            document.getElementById('th-ion-col2').innerText = lang === 'es' ? 'Nombre Tradicional / Aceptado IUPAC' : 'Nom Tradicional / Acceptat IUPAC';
+
             document.getElementById('lbl-config-session').innerText = keys.configSession;
             document.getElementById('lbl-student-name').innerText = keys.studentName;
             document.getElementById('lbl-question-mode').innerText = keys.questionMode;
@@ -769,45 +1532,10 @@
             buildLabSelectors();
             buildErrorsGrid();
             buildElementsGrid();
+            buildIonsTable();
             if (CURRENT_QUESTION) {
-                renderQuestion(); // Re-render target with new language
+                renderQuestion();
             }
-        }
-
-        function switchTab(tabId) {
-            const tabs = ['quiz', 'lab', 'errors', 'guide'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const content = document.getElementById(`content-${t}`);
-                if (t === tabId) {
-                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition duration-200 bg-white text-indigo-600 shadow-sm border border-slate-200";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition duration-200 text-slate-600 hover:text-slate-900 hover:bg-white/50";
-                    content.classList.add('hidden');
-                }
-            });
-        }
-
-        function setQuizMode(mode) {
-            QUIZ_MODE = mode;
-            const btnFormula = document.getElementById('btn-mode-formula');
-            const btnName = document.getElementById('btn-mode-name');
-            const btnMixed = document.getElementById('btn-mode-mixed');
-            
-            btnFormula.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
-            btnName.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
-            btnMixed.className = "py-1.5 rounded font-semibold transition duration-150 text-slate-500 hover:text-slate-800";
-
-            if (mode === 'formula') btnFormula.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
-            else if (mode === 'name') btnName.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
-            else btnMixed.className = "py-1.5 rounded font-bold transition duration-150 bg-white text-indigo-600 shadow-sm";
-            
-            loadQuestion();
-        }
-
-        function updateStudentName() {
-            STUDENT_NAME = document.getElementById('student-name-input').value.trim();
         }
 
         function buildCategoriesMenu() {
@@ -891,7 +1619,6 @@
                 isCorrect = validNames.some(name => normalizeString(studentInput) === normalizeString(name));
             }
 
-            // Registrar en historial para el PDF de evaluación
             SESSION_HISTORY.push({
                 mode: currentQuestionMode,
                 prompt: currentQuestionMode === "formula" ? CURRENT_QUESTION.names[CURRENT_LANG][0] : CURRENT_QUESTION.formula,
@@ -922,7 +1649,7 @@
                     : `Excel·lent feina. Has formulat correctament.`;
 
             } else {
-                CURRENT_SCORE = 0; // Se resetea la racha activa
+                CURRENT_SCORE = 0;
                 updateScoreboards();
 
                 feedbackIcon.innerText = "❌";
@@ -970,7 +1697,6 @@
             document.getElementById('quiz-input').focus();
         }
 
-        // --- LABORATORIO AMPLIADO DE CRUCE DE VALENCIAS ---
         const LAB_CATIONS = [
             { sym: "Na", charge: 1, name: { es: "Sodio", ca: "Sodi" } },
             { sym: "K", charge: 1, name: { es: "Potasio", ca: "Potassi" } },
@@ -1056,7 +1782,6 @@
             catCount = catCount / divisor;
             anCount = anCount / divisor;
 
-            // Paréntesis avanzados para aniones o cationes poliatómicos
             let formattedCation = catSym;
             if (selectedCation.isPolyatomic && catCount > 1) {
                 formattedCation = `(${catSym})`;
@@ -1078,7 +1803,7 @@
             };
 
             const anionBaseName = selectedAnion.name[CURRENT_LANG];
-            const cationBaseName = selectedCation.name[CURRENT_LANG].replace(/\(.*\)/, ''); // Remove stock roman numerals for base
+            const cationBaseName = selectedCation.name[CURRENT_LANG].replace(/\(.*\)/, '');
 
             const prefAnion = prefix(anCount);
             const prefCation = catCount > 1 ? prefix(catCount) : "";
@@ -1113,7 +1838,6 @@
             return roman;
         }
 
-        // --- SECCIÓN: DELS ERRORS APRENEM INTERACTIVA ---
         function buildErrorsGrid() {
             const grid = document.getElementById('errors-grid');
             grid.innerHTML = "";
@@ -1189,7 +1913,6 @@
             else explanationBox.classList.add('hidden');
         }
 
-        // --- GUÍA DE ESTUDIO ---
         function buildElementsGrid() {
             const ELEMENTS_DATA = [
                 { sym: "H", val: "+1, -1", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
@@ -1215,7 +1938,6 @@
             });
         }
 
-        // --- SISTEMA DE EXPORTACIÓN A PDF TOTALMENTE SEGURO CON HISTORIAL DETALLADO ---
         function prepareAndPrintSession() {
             const studentName = STUDENT_NAME || (CURRENT_LANG === 'es' ? 'Alumno Anónimo' : 'Alumne Anònim');
             const dateStr = new Date().toLocaleDateString(CURRENT_LANG === 'es' ? 'es-ES' : 'ca-ES', {
@@ -1225,7 +1947,6 @@
             const sec = (timerSeconds % 60).toString().padStart(2, '0');
             const timeStr = `${min}:${sec}`;
 
-            // Renderizar la tabla de historial detallada
             let historyTableRows = "";
             if (SESSION_HISTORY.length === 0) {
                 historyTableRows = `<tr><td colspan="4" style="text-align:center; padding: 15px; color: #64748b;">${CURRENT_LANG === 'es' ? 'Aún no se ha respondido ninguna pregunta.' : 'Encara no s\'ha respost cap pregunta.'}</td></tr>`;
@@ -1250,9 +1971,13 @@
 
             const printWindow = window.open('', '_blank');
             if (!printWindow) {
-                alert(CURRENT_LANG === 'es' 
-                    ? "Por favor, permite las ventanas emergentes en tu navegador para generar el informe en PDF." 
-                    : "Per favor, permet les finestres emergents al teu navegador per a generar l'informe en PDF.");
+                const banner = document.createElement('div');
+                banner.className = "fixed bottom-5 right-5 bg-amber-500 text-white px-5 py-3 rounded-2xl shadow-xl z-50 text-sm font-bold flex items-center gap-2";
+                banner.innerText = CURRENT_LANG === 'es' 
+                    ? "⚠️ Por favor, permite las ventanas emergentes en tu navegador para generar el informe en PDF." 
+                    : "⚠️ Per favor, permet les finestres emergents al navegador per a generar l'informe en PDF.";
+                document.body.appendChild(banner);
+                setTimeout(() => banner.remove(), 4000);
                 return;
             }
 
