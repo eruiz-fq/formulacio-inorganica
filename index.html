@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formúla - Entrenador de Formulación Química</title>
+    <title>FormulAR - Entrenador de Formulación Química</title>
     <!-- Tailwind CSS para diseño moderno, responsivo y de fondo claro -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -240,16 +240,16 @@
                         <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest" id="lbl-visualizer">3. Visualización y Reglas</h3>
                         
                         <div class="flex flex-col items-center justify-center gap-6 py-6 bg-slate-50 rounded-xl border border-slate-200">
-                            <!-- Iones Activos -->
+                            <!-- Iones Activos con Carga en Superíndice -->
                             <div class="flex items-center gap-8 justify-center min-h-[80px]">
-                                <div id="v-cation" class="flex flex-col items-center transition-all duration-300">
-                                    <span class="text-3xl font-extrabold text-indigo-600 mono" id="lab-show-cation-sym">Fe</span>
-                                    <span class="text-sm text-indigo-500 font-bold mt-1" id="lab-show-cation-chg">3+</span>
+                                <div id="v-cation" class="flex items-baseline transition-all duration-300">
+                                    <span class="text-3xl sm:text-4xl font-extrabold text-indigo-600 mono" id="lab-show-cation-sym">Fe</span>
+                                    <sup class="text-lg sm:text-xl text-indigo-500 font-bold ml-0.5 mono" id="lab-show-cation-chg">3+</sup>
                                 </div>
-                                <span class="text-2xl text-slate-300 font-bold">+</span>
-                                <div id="v-anion" class="flex flex-col items-center transition-all duration-300">
-                                    <span class="text-3xl font-extrabold text-violet-600 mono" id="lab-show-anion-sym">O</span>
-                                    <span class="text-sm text-violet-500 font-bold mt-1" id="lab-show-anion-chg">2-</span>
+                                <span class="text-2xl text-slate-300 font-bold self-center">+</span>
+                                <div id="v-anion" class="flex items-baseline transition-all duration-300">
+                                    <span class="text-3xl sm:text-4xl font-extrabold text-violet-600 mono" id="lab-show-anion-sym">O</span>
+                                    <sup class="text-lg sm:text-xl text-violet-500 font-bold ml-0.5 mono" id="lab-show-anion-chg">2-</sup>
                                 </div>
                             </div>
 
@@ -383,8 +383,8 @@
 
     <!-- FOOTER -->
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 space-y-1 mt-auto">
-    
-        <p>© 2026 Elena Ruiz Alfaro • Física i química</p>
+        <p class="font-semibold text-slate-600">Institut d'Ensenyaments a Distància de les Illes Balears (IEDIB)</p>
+        <p>© 2026 Elena Ruiz Alfaro • Preparación para la evaluación PAU/PTE</p>
     </footer>
 
     <!-- LOGICA DEL JUEGO / DATA BASE -->
@@ -1760,10 +1760,12 @@
         }
 
         function updateLabVisualizer() {
+            const catChg = selectedCation.charge > 1 ? `${selectedCation.charge}+` : '+';
+            const anChg = selectedAnion.charge > 1 ? `${selectedAnion.charge}-` : '-';
             document.getElementById('lab-show-cation-sym').innerHTML = renderFormula(selectedCation.sym);
-            document.getElementById('lab-show-cation-chg').innerText = `${selectedCation.charge}+`;
+            document.getElementById('lab-show-cation-chg').innerText = catChg;
             document.getElementById('lab-show-anion-sym').innerHTML = renderFormula(selectedAnion.sym);
-            document.getElementById('lab-show-anion-chg').innerText = `${selectedAnion.charge}-`;
+            document.getElementById('lab-show-anion-chg').innerText = anChg;
             document.getElementById('lab-result-panel').classList.add('hidden');
         }
 
@@ -2107,7 +2109,7 @@
                 <body>
                     <div class="certificate">
                         <h1>${CURRENT_LANG === 'es' ? 'Certificado de Formulación' : 'Certificat de Formulació'}</h1>
-                        <h2>${CURRENT_LANG === 'es' ? 'Física y Química — Elena Ruiz Alfaro' : 'Física i Química — Elena Ruiz Alfaro'}</h2>
+                        <h2>${CURRENT_LANG === 'es' ? 'Dpto. Física y Química — Elena Ruiz Alfaro' : 'Dpt. Física i Química — Elena Ruiz Alfaro'}</h2>
                         
                         <div class="meta">
                             <div>
@@ -2137,8 +2139,8 @@
                         </table>
 
                         <div class="footer">
-                           
-                            <p><strong>Física y Química — Elena Ruiz</strong></p>
+                            <p>${CURRENT_LANG === 'es' ? 'Este documento de autoevaluación sigue el currículo oficial de 1º de Bachillerato del IEDIB y de la UIB' : 'Aquest document d\'autoavaluació segueix el currículum oficial de 1r de Batxillerat de l\'IEDIB i de la UIB'}</p>
+                            <p><strong>Física y Química — IEDIB</strong></p>
                         </div>
                     </div>
                     <script>
